@@ -39,6 +39,8 @@ def classify(path):
     parent = " ".join(p.name.lower() for p in path.parents)
     haystack = f"{name} {parent}"
 
+    if "insulator tools" in haystack:
+        return "Insulator Tools"
     if "snowmans notes half size" in name:
         return "Notebook"
     if "reference" in haystack or "chart" in haystack or "size chart" in haystack:
@@ -127,23 +129,42 @@ def extract_xlsx(path):
     }
 
 
-def extract_pdf(path):
+def extract_pdf(path, image_out, rel_image_root, extract_images=False):
     pages = 0
     text_parts = []
+    page_texts = []
+    images = []
     status = "pdf-text"
     try:
         reader = PdfReader(str(path))
         pages = len(reader.pages)
-        for page in reader.pages[:60]:
-            page_text = clean_text(page.extract_text() or "")
+        for page_index, page in enumerate(reader.pages[:60], start=1):
+            raw_text = page.extract_text() or ""
+            lines = [clean_text(line) for line in raw_text.splitlines()]
+            page_text = "\n".join(line for line in lines if line)
             if page_text:
                 text_parts.append(page_text)
+                page_texts.append({"page": page_index, "text": page_text})
+            if extract_images:
+                for image_index, image in enumerate(getattr(page, "images", [])[:6], start=1):
+                    if len(images) >= 80:
+                        break
+                    ext = Path(getattr(image, "name", "")).suffix.lower()
+                    if ext not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+                        ext = ".jpg"
+                    image_out.mkdir(parents=True, exist_ok=True)
+                    out_name = f"{slugify(path.stem)}-p{page_index:03d}-{image_index:02d}{ext}"
+                    out = image_out / out_name
+                    out.write_bytes(image.data)
+                    images.append(f"{rel_image_root}/{out_name}")
         if not text_parts:
             status = "pdf-needs-ocr"
     except Exception as exc:
         status = f"pdf-error: {exc.__class__.__name__}"
     return {
         "text": "\n".join(text_parts),
+        "pdfPages": page_texts,
+        "images": images,
         "pages": pages,
         "extraction": status,
     }
@@ -180,6 +201,7 @@ def empty_directory(path):
 
 def file_entry(path, source_root, asset_dir, rel_asset_root):
     relative = str(path.relative_to(source_root)).replace("\\", "/")
+    is_tool_resource = relative.lower().startswith("insulator tools/")
     stat = path.stat()
     ext = path.suffix.lower()
     extracted = {"text": "", "extraction": "not-parsed"}
@@ -190,11 +212,14 @@ def file_entry(path, source_root, asset_dir, rel_asset_root):
         elif ext == ".xlsx":
             extracted = extract_xlsx(path)
         elif ext == ".pdf":
-            extracted = extract_pdf(path)
+            extracted = extract_pdf(path, asset_dir / "pdf-images", "assets/pdf-images", extract_images=is_tool_resource)
     except Exception as exc:
         extracted = {"text": "", "extraction": f"error: {exc.__class__.__name__}"}
 
-    asset_url, asset_status = copy_asset(path, asset_dir / "files", f"{rel_asset_root}/files")
+    if is_tool_resource:
+        asset_url, asset_status = None, "text-resource"
+    else:
+        asset_url, asset_status = copy_asset(path, asset_dir / "files", f"{rel_asset_root}/files")
     summary = summarize(extracted.get("text", ""), f"{path.stem} ({ext.lstrip('.').upper()})")
     title = path.stem.replace("_", " ").replace("  ", " ").strip()
     category = classify(path)
@@ -212,11 +237,14 @@ def file_entry(path, source_root, asset_dir, rel_asset_root):
         "summary": summary,
         "assetUrl": asset_url,
         "assetStatus": asset_status,
+        "downloadAllowed": not is_tool_resource,
+        "resourceMode": "text-resource" if is_tool_resource else "file-reference",
         "extraction": extracted.get("extraction", "not-parsed"),
         "pages": extracted.get("pages"),
         "imageCount": extracted.get("image_count", 0),
         "images": extracted.get("images", []),
         "thumbnailUrl": asset_url if ext in {".jpg", ".jpeg", ".png", ".gif", ".webp"} else (extracted.get("images", [None]) or [None])[0],
+        "pdfPages": extracted.get("pdfPages", []),
         "paragraphs": extracted.get("paragraphs", []),
         "tables": extracted.get("tables", []),
         "sheets": extracted.get("sheets", []),
@@ -231,8 +259,10 @@ def build_html_pages(entries, out_dir):
         body = [f"<h1>{html.escape(entry['title'])}</h1>"]
         body.append(f"<p class=\"meta\">{html.escape(entry['category'])} · {entry['extension']} · {entry['sizeMB']} MB</p>")
         body.append(f"<p>{html.escape(entry['summary'])}</p>")
-        if entry.get("assetUrl"):
+        if entry.get("assetUrl") and entry.get("downloadAllowed", True):
             body.append(f"<p><a class=\"button\" href=\"../{html.escape(entry['assetUrl'])}\">Open file</a></p>")
+        elif entry.get("assetStatus") == "text-resource":
+            body.append("<p class=\"notice\">This tool has been converted to a text-based web resource. The source file is not offered as a download here.</p>")
         elif entry["assetStatus"] == "oversized":
             body.append("<p class=\"notice\">This source is too large to bundle for free static hosting. Keep it in cloud storage and add its public link in the catalog when ready.</p>")
         if entry.get("thumbnailUrl"):
@@ -253,6 +283,13 @@ def build_html_pages(entries, out_dir):
                 cells = "".join(f"<{tag}>{html.escape(cell)}</{tag}>" for cell in row[:8])
                 body.append(f"<tr>{cells}</tr>")
             body.append("</table></div>")
+        for pdf_page in entry.get("pdfPages", [])[:60]:
+            body.append(f"<section class=\"text-page\"><h2>Page {pdf_page['page']}</h2>")
+            for paragraph in pdf_page["text"].split("\n"):
+                paragraph = paragraph.strip()
+                if paragraph:
+                    body.append(f"<p>{html.escape(paragraph)}</p>")
+            body.append("</section>")
         if entry.get("images"):
             body.append("<h2>Notebook Images</h2><div class=\"image-grid\">")
             for image_url in entry["images"][:80]:

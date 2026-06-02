@@ -22,6 +22,7 @@ function normalize(value) {
 }
 
 function formatStatus(entry) {
+  if (entry.assetStatus === "text-resource") return "Converted to a text-based tool resource";
   if (entry.extraction === "pdf-needs-ocr") return "Scanned PDF: OCR recommended";
   if (entry.assetStatus === "oversized") return "Too large to bundle for free static hosting";
   if (entry.assetStatus === "bundled") return "Bundled for offline-style access";
@@ -78,7 +79,7 @@ function renderCards() {
     card.querySelector(".summary").textContent = entry.summary;
     card.querySelector(".detail-link").href = entry.pageUrl;
     const asset = card.querySelector(".asset-link");
-    if (entry.assetUrl) {
+    if (entry.assetUrl && entry.downloadAllowed !== false) {
       asset.href = entry.assetUrl;
     } else {
       asset.remove();

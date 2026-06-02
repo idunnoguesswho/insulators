@@ -356,6 +356,22 @@ input[type="search"] {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
+.text-page {
+  margin: 22px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--paper-strong) 88%, var(--paper));
+}
+
+.text-page h2 {
+  margin-top: 0;
+}
+
+.text-page p {
+  margin: 0 0 9px;
+}
+
 .table-wrap {
   max-width: 100%;
   overflow-x: auto;
