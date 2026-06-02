@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Insulator Field Notebook</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Snowman's Notes</p>
+      <h1>Insulator Field Notebook</h1>
+    </div>
+    <button class="icon-button" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">◐</button>
+  </header>
+
+  <main>
+    <section class="hero sheet">
+      <div>
+        <p class="kicker">Mobile reference for layout, charts, supplements, and field notes</p>
+        <h2>Find the page, chart, or handbook you need without digging through the book bag.</h2>
+      </div>
+      <div class="search-panel">
+        <label for="searchInput">Search the notebook</label>
+        <input id="searchInput" type="search" placeholder="Try gore, metal, firestop, tee, sizing...">
+      </div>
+    </section>
+
+    <nav class="tabs" id="categoryTabs" aria-label="Notebook categories"></nav>
+
+    <section class="quick-grid" aria-label="Quick access">
+      <a href="#Reference Charts" class="quick-card">
+        <span>Reference Charts</span>
+        <strong id="chartCount">0</strong>
+      </a>
+      <a href="#Book Supplements" class="quick-card">
+        <span>Book Supplements</span>
+        <strong id="supplementCount">0</strong>
+      </a>
+      <a href="#Layouts & Patterns" class="quick-card">
+        <span>Layouts & Patterns</span>
+        <strong id="layoutCount">0</strong>
+      </a>
+    </section>
+
+    <section class="library-head">
+      <div>
+        <p class="eyebrow">Library</p>
+        <h2 id="resultTitle">All references</h2>
+      </div>
+      <p id="resultMeta">Loading...</p>
+    </section>
+
+    <section id="cardGrid" class="card-grid" aria-live="polite"></section>
+  </main>
+
+  <template id="cardTemplate">
+    <article class="resource-card">
+      <div class="card-top">
+        <span class="pill"></span>
+        <span class="file-size"></span>
+      </div>
+      <h3></h3>
+      <p class="summary"></p>
+      <div class="card-actions">
+        <a class="button detail-link" href="#">Read</a>
+        <a class="button ghost asset-link" href="#">Open file</a>
+      </div>
+      <p class="status"></p>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
