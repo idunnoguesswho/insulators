@@ -19,6 +19,65 @@ ASSET_EXTENSIONS = {".pdf", ".docx", ".xlsx", ".jpg", ".jpeg", ".png", ".gif", "
 MAX_BUNDLED_ASSET_MB = 10
 
 
+TOPIC_DEFINITIONS = [
+    {
+        "id": "field-notebook",
+        "title": "Field Notebook",
+        "description": "Snowman's half-size notebook material, notes, sketches, and working field references.",
+        "keywords": ["snowmans notes", "snowman", "notebook", "journal", "jon"],
+    },
+    {
+        "id": "pattern-development",
+        "title": "Pattern Development",
+        "description": "Parallel line development, tees, bends, gores, maps, layouts, and fitting geometry.",
+        "keywords": ["development", "tee", "gore", "pattern", "map", "dimension", "layout", "bend", "body"],
+    },
+    {
+        "id": "reference-charts",
+        "title": "Reference Charts",
+        "description": "Charts, size references, cards, AI field-reference sections, and quick lookup tables.",
+        "keywords": ["chart", "reference", "size", "section", "field_reference", "field reference", "conduit", "cards"],
+    },
+    {
+        "id": "book-supplements",
+        "title": "Book Supplements",
+        "description": "Supplemental books, worksheets, local books, notes, measuring guides, and supporting material.",
+        "keywords": ["supplement", "local 7", "type me", "metal", "band", "measuring", "jons notes"],
+    },
+    {
+        "id": "insulator-tools",
+        "title": "Insulator Tools",
+        "description": "Tool-folder resources converted into readable web pages with images instead of downloads.",
+        "keywords": ["insulator tools"],
+    },
+    {
+        "id": "firestopping-safety",
+        "title": "Firestopping & Safety",
+        "description": "Firestopping, asbestos, hazards, controls, inspection manuals, and related safety material.",
+        "keywords": ["fire", "firestop", "asbestos", "hazard", "safety", "controls"],
+    },
+    {
+        "id": "standards-specs",
+        "title": "Standards & Specs",
+        "description": "Standards, specs, handbooks, working rules, local rules, and official guidance documents.",
+        "keywords": ["standard", "spec", "handbook", "rules", "cbr", "commercial", "industrial"],
+    },
+    {
+        "id": "sketches-images",
+        "title": "Sketches & Images",
+        "description": "Standalone images, diagrams, sketches, and extracted visual references.",
+        "keywords": ["sketch", "image", "jpg", "png", "t-master", "hazards and controls"],
+    },
+    {
+        "id": "source-inventory",
+        "title": "Complete Source Inventory",
+        "description": "Every source file found in the provided folder, including oversized and unsupported files.",
+        "keywords": [],
+        "include_all": True,
+    },
+]
+
+
 def slugify(value):
     value = value.lower().replace("&", " and ")
     value = re.sub(r"[^a-z0-9]+", "-", value).strip("-")
@@ -58,6 +117,34 @@ def classify(path):
     if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
         return "Sketches & Images"
     return "Library"
+
+
+def assign_topics(path, category):
+    relative = str(path).lower().replace("\\", "/")
+    topics = []
+    for topic in TOPIC_DEFINITIONS:
+        if topic.get("include_all"):
+            continue
+        if any(keyword in relative for keyword in topic["keywords"]):
+            topics.append(topic["id"])
+
+    category_map = {
+        "Notebook": "field-notebook",
+        "Layouts & Patterns": "pattern-development",
+        "Reference Charts": "reference-charts",
+        "Book Supplements": "book-supplements",
+        "Insulator Tools": "insulator-tools",
+        "Safety & Firestopping": "firestopping-safety",
+        "Standards & Handbooks": "standards-specs",
+        "Sketches & Images": "sketches-images",
+    }
+    mapped = category_map.get(category)
+    if mapped and mapped not in topics:
+        topics.append(mapped)
+    if not topics:
+        topics.append("source-inventory")
+    topics.append("source-inventory")
+    return list(dict.fromkeys(topics))
 
 
 def extract_docx(path, image_out, rel_image_root):
@@ -223,11 +310,13 @@ def file_entry(path, source_root, asset_dir, rel_asset_root):
     summary = summarize(extracted.get("text", ""), f"{path.stem} ({ext.lstrip('.').upper()})")
     title = path.stem.replace("_", " ").replace("  ", " ").strip()
     category = classify(path)
+    topics = assign_topics(path.relative_to(source_root), category)
 
     return {
         "id": slugify(f"{relative}-{sha1_short(relative)}"),
         "title": title,
         "category": category,
+        "topics": topics,
         "extension": ext.lstrip(".").upper(),
         "relativePath": relative,
         "sourcePath": str(path),
@@ -250,6 +339,137 @@ def file_entry(path, source_root, asset_dir, rel_asset_root):
         "sheets": extracted.get("sheets", []),
         "searchText": clean_text(" ".join([title, category, relative, extracted.get("text", "")]))[:60000],
     }
+
+
+def xlsx_sheet_entries(entry):
+    if entry.get("extension") != "XLSX" or not entry.get("sheets"):
+        return []
+
+    sheet_entries = []
+    for sheet in entry["sheets"]:
+        sheet_name = sheet["name"]
+        sheet_text = "\n".join(
+            " | ".join(cell for cell in row if cell)
+            for row in sheet.get("rows", [])
+        )
+        title = sheet_name.strip() or f"{entry['title']} sheet"
+        relative = f"{entry['relativePath']}#{sheet_name}"
+        sheet_entry = {
+            **entry,
+            "id": slugify(f"{entry['relativePath']}-{sheet_name}-{sha1_short(relative)}"),
+            "title": title,
+            "relativePath": relative,
+            "sourcePath": f"{entry['sourcePath']}#{sheet_name}",
+            "summary": summarize(sheet_text, f"{entry['title']} workbook tab"),
+            "resourceMode": "xlsx-sheet",
+            "sheets": [sheet],
+            "searchText": clean_text(" ".join([title, entry["category"], relative, sheet_text]))[:60000],
+        }
+        sheet_entries.append(sheet_entry)
+    return sheet_entries
+
+
+def expand_workbook_sheet_entries(entries):
+    expanded = []
+    for entry in entries:
+        expanded.append(entry)
+        expanded.extend(xlsx_sheet_entries(entry))
+    return expanded
+
+
+def entry_card(entry, prefix="../"):
+    status = ""
+    if entry.get("assetStatus") == "text-resource":
+        status = "Text resource"
+    elif entry.get("assetStatus") == "oversized":
+        status = "Listed only: oversized for static hosting"
+    elif entry.get("assetUrl"):
+        status = "File included"
+    elif entry.get("extraction") == "pdf-needs-ocr":
+        status = "Needs OCR"
+    else:
+        status = entry.get("extraction", "")
+
+    thumb = ""
+    if entry.get("thumbnailUrl"):
+        thumb = f"<img class=\"card-thumb\" src=\"{prefix}{html.escape(entry['thumbnailUrl'])}\" alt=\"\">"
+
+    actions = [f"<a class=\"button detail-link\" href=\"{prefix}{html.escape(entry['pageUrl'])}\">Read</a>"]
+    if entry.get("assetUrl") and entry.get("downloadAllowed", True):
+        actions.append(f"<a class=\"button ghost asset-link\" href=\"{prefix}{html.escape(entry['assetUrl'])}\">Open file</a>")
+
+    return f"""
+<article class=\"resource-card\">
+  {thumb}
+  <div class=\"card-top\"><span class=\"pill\">{html.escape(entry['extension'])}</span><span class=\"file-size\">{entry['sizeMB']} MB</span></div>
+  <h3>{html.escape(entry['title'])}</h3>
+  <p class=\"summary\">{html.escape(entry['summary'])}</p>
+  <div class=\"card-actions\">{''.join(actions)}</div>
+  <p class=\"status\">{html.escape(status)}</p>
+</article>
+"""
+
+
+def render_topic_page(topic, entries, out_dir):
+    topic_entries = entries if topic.get("include_all") else [entry for entry in entries if topic["id"] in entry.get("topics", [])]
+    topic_entries = sorted(topic_entries, key=lambda entry: (entry["category"], entry["title"].lower(), entry["relativePath"].lower()))
+    readable = [
+        entry for entry in topic_entries
+        if entry.get("paragraphs") or entry.get("pdfPages") or entry.get("sheets") or entry.get("images")
+    ]
+    highlights = []
+    for entry in readable[:8]:
+        highlights.append(
+            f"<section class=\"topic-excerpt\"><h2>{html.escape(entry['title'])}</h2>"
+            f"<p>{html.escape(entry['summary'])}</p>"
+            f"<p><a class=\"back-link\" href=\"../{html.escape(entry['pageUrl'])}\">Open full resource</a></p></section>"
+        )
+    if not highlights:
+        highlights.append("<section class=\"topic-excerpt\"><h2>Source Listing</h2><p>This topic is represented through the source list below.</p></section>")
+
+    cards = "".join(entry_card(entry) for entry in topic_entries)
+    topic_dir = out_dir / "topics"
+    topic_dir.mkdir(parents=True, exist_ok=True)
+    page = f"""<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <title>{html.escape(topic['title'])}</title>
+  <link rel=\"stylesheet\" href=\"../styles.css\">
+</head>
+<body class=\"detail-page\">
+  <main class=\"topic-page\">
+    <section class=\"sheet detail topic-hero\">
+      <a href=\"../index.html\" class=\"back-link\">Back to field notebook</a>
+      <p class=\"eyebrow\">Topic</p>
+      <h1>{html.escape(topic['title'])}</h1>
+      <p>{html.escape(topic['description'])}</p>
+      <p class=\"meta\">{len(topic_entries)} resources included</p>
+    </section>
+    <section class=\"topic-layout\">
+      <div class=\"topic-main\">{''.join(highlights)}</div>
+      <aside class=\"topic-source-list sheet\">
+        <h2>Sources In This Topic</h2>
+        <div class=\"card-grid compact\">{cards}</div>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>
+"""
+    (topic_dir / f"{topic['id']}.html").write_text(page, encoding="utf-8")
+    return {
+        "id": topic["id"],
+        "title": topic["title"],
+        "description": topic["description"],
+        "url": f"topics/{topic['id']}.html",
+        "count": len(topic_entries),
+    }
+
+
+def build_topic_pages(entries, out_dir):
+    return [render_topic_page(topic, entries, out_dir) for topic in TOPIC_DEFINITIONS]
 
 
 def build_html_pages(entries, out_dir):
@@ -336,28 +556,34 @@ def main():
     data_dir.mkdir(parents=True, exist_ok=True)
     asset_dir.mkdir(parents=True, exist_ok=True)
 
-    for generated in [data_dir, asset_dir, out_dir / "pages"]:
+    for generated in [data_dir, asset_dir, out_dir / "pages", out_dir / "topics"]:
         empty_directory(generated)
 
     files = [
         p for p in source_root.rglob("*")
-        if p.is_file() and p.name.lower() != "desktop.ini"
+        if p.is_file() and p.name.lower() != "desktop.ini" and not p.name.startswith("~$")
     ]
+    source_file_count = len(files)
     entries = [file_entry(p, source_root, asset_dir, "assets") for p in sorted(files)]
+    entries = expand_workbook_sheet_entries(entries)
     build_html_pages(entries, out_dir)
+    topics = build_topic_pages(entries, out_dir)
 
     categories = sorted({entry["category"] for entry in entries})
     notebook = next((e for e in entries if e["title"].lower() == "snowmans notes half size" and e["extension"] == "DOCX"), None)
     catalog = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "sourceRoot": str(source_root),
+        "sourceFileCount": source_file_count,
+        "resourceCount": len(entries),
         "maxBundledAssetMB": MAX_BUNDLED_ASSET_MB,
         "categories": categories,
+        "topics": topics,
         "notebookId": notebook["id"] if notebook else None,
         "entries": entries,
     }
     (data_dir / "catalog.json").write_text(json.dumps(catalog, indent=2), encoding="utf-8")
-    print(f"Imported {len(entries)} files into {out_dir}")
+    print(f"Imported {source_file_count} source files into {len(entries)} site resources in {out_dir}")
 
 
 if __name__ == "__main__":

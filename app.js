@@ -9,6 +9,7 @@ const els = {
   grid: document.querySelector("#cardGrid"),
   template: document.querySelector("#cardTemplate"),
   search: document.querySelector("#searchInput"),
+  topicGrid: document.querySelector("#topicGrid"),
   title: document.querySelector("#resultTitle"),
   meta: document.querySelector("#resultMeta"),
   theme: document.querySelector("#themeToggle"),
@@ -96,8 +97,21 @@ function renderCounts() {
   els.layoutCount.textContent = count("Layouts & Patterns");
 }
 
+function renderTopics() {
+  if (!els.topicGrid) return;
+  els.topicGrid.innerHTML = "";
+  for (const topic of state.catalog.topics || []) {
+    const link = document.createElement("a");
+    link.className = "topic-card";
+    link.href = topic.url;
+    link.innerHTML = `<span>${topic.count} resources</span><strong>${topic.title}</strong><p>${topic.description}</p>`;
+    els.topicGrid.appendChild(link);
+  }
+}
+
 function render() {
   renderTabs();
+  renderTopics();
   renderCards();
   renderCounts();
 }
