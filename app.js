@@ -1,6 +1,6 @@
 const state = {
   catalog: null,
-  category: "All",
+  tab: "all",
   query: "",
 };
 
@@ -25,6 +25,8 @@ function normalize(value) {
 }
 
 function formatStatus(entry) {
+  if (entry.resourceMode === "merged-reference") return `${entry.mergedSourceCount || 0} reference tabs merged`;
+  if (entry.duplicateSourceCount) return `${entry.duplicateSourceCount} matching source copies grouped`;
   if (entry.assetStatus === "text-resource") return "Converted to a text-based tool resource";
   if (entry.extraction === "pdf-needs-ocr") return "Scanned PDF: OCR recommended";
   if (entry.assetStatus === "oversized") return "Too large to bundle for free static hosting";
@@ -34,6 +36,7 @@ function formatStatus(entry) {
 
 function resourceKind(entry) {
   const haystack = normalize(`${entry.title} ${entry.category} ${entry.relativePath}`);
+  if (entry.resourceMode === "merged-reference") return "Merged reference";
   if (entry.resourceMode === "xlsx-sheet" || /chart|table|card|size|flange|fraction|decimal|reference/.test(haystack)) {
     return "Quick reference";
   }
@@ -44,39 +47,74 @@ function resourceKind(entry) {
   return "Source record";
 }
 
+function visibleEntries() {
+  return state.catalog.entries.filter((entry) => !entry.browseHidden);
+}
+
+function tabGroups() {
+  return [
+    {
+      id: "all",
+      title: "All",
+      description: "Everything except secondary duplicate cards.",
+    },
+    ...(state.catalog.tabGroups || []),
+  ];
+}
+
+function tabMatches(tab, entry) {
+  if (tab.id === "all") return !entry.browseHidden;
+  if (!tab.includeHidden && entry.browseHidden) return false;
+  if (tab.all) return true;
+  if ((tab.categories || []).includes(entry.category)) return true;
+  if ((tab.resourceModes || []).includes(entry.resourceMode)) return true;
+  if (tab.hasImages && (entry.images?.length || entry.thumbnailUrl)) return true;
+  return false;
+}
+
+function activeTab() {
+  return tabGroups().find((tab) => tab.id === state.tab) || tabGroups()[0];
+}
+
 function filteredEntries() {
   const q = normalize(state.query);
+  const tab = activeTab();
   return state.catalog.entries.filter((entry) => {
-    const categoryMatch = state.category === "All" || entry.category === state.category;
+    const categoryMatch = tabMatches(tab, entry);
     const queryMatch = !q || normalize(entry.searchText).includes(q);
     return categoryMatch && queryMatch;
   });
 }
 
-function setCategory(category) {
-  state.category = category;
-  if (category !== "All") window.location.hash = encodeURIComponent(category);
+function setTab(tabId) {
+  state.tab = tabId;
+  if (tabId !== "all") window.location.hash = encodeURIComponent(tabId);
+  else history.replaceState(null, "", window.location.pathname);
   render();
 }
 
 function renderTabs() {
   els.tabs.innerHTML = "";
-  ["All", ...state.catalog.categories].forEach((category) => {
-    const tab = document.createElement("button");
-    tab.className = "tab";
-    tab.type = "button";
-    tab.textContent = category;
-    tab.setAttribute("aria-selected", String(category === state.category));
-    tab.addEventListener("click", () => setCategory(category));
-    els.tabs.appendChild(tab);
+  tabGroups().forEach((group) => {
+    const button = document.createElement("button");
+    button.className = "tab";
+    button.type = "button";
+    const count = group.id === "all" ? visibleEntries().length : group.count;
+    button.textContent = `${group.title} ${count ?? ""}`.trim();
+    button.title = group.description || group.title;
+    button.setAttribute("aria-selected", String(group.id === state.tab));
+    button.addEventListener("click", () => setTab(group.id));
+    els.tabs.appendChild(button);
   });
 }
 
 function renderCards() {
   const entries = filteredEntries();
   els.grid.innerHTML = "";
-  els.title.textContent = state.category === "All" ? "All lessons and references" : state.category;
-  els.meta.textContent = `${entries.length} of ${state.catalog.entries.length} resources`;
+  const tab = activeTab();
+  els.title.textContent = tab.id === "all" ? "All lessons and references" : tab.title;
+  const total = tab.includeHidden ? state.catalog.entries.length : visibleEntries().length;
+  els.meta.textContent = `${entries.length} shown / ${total} browse cards`;
 
   for (const entry of entries) {
     const card = els.template.content.cloneNode(true);
@@ -105,7 +143,7 @@ function renderCards() {
 }
 
 function renderCounts() {
-  const count = (category) => state.catalog.entries.filter((entry) => entry.category === category).length;
+  const count = (category) => visibleEntries().filter((entry) => entry.category === category).length;
   els.chartCount.textContent = count("Reference Charts");
   els.supplementCount.textContent = count("Book Supplements");
   els.layoutCount.textContent = count("Layouts & Patterns");
@@ -127,10 +165,11 @@ function renderReferences() {
   if (!els.referenceList) return;
   const references = new Map();
   for (const entry of state.catalog.entries) {
-    const key = entry.sourcePath || entry.relativePath || entry.title;
+    if (entry.resourceMode === "merged-reference") continue;
+    const key = (entry.relativePath || entry.title).split("#", 1)[0];
     if (!references.has(key)) {
       references.set(key, {
-        title: entry.relativePath || entry.title,
+        title: key,
         sourcePath: entry.sourcePath || "",
         category: entry.category || "Reference",
       });
@@ -177,7 +216,7 @@ async function init() {
   const response = await fetch("data/catalog.json");
   state.catalog = await response.json();
   const hash = decodeURIComponent(window.location.hash.replace("#", ""));
-  if (hash && state.catalog.categories.includes(hash)) state.category = hash;
+  if (hash && tabGroups().some((tab) => tab.id === hash)) state.tab = hash;
   render();
 }
 

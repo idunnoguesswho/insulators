@@ -414,8 +414,28 @@ def render_raw(content):
     return render_overview(sentences)
 
 
+def render_source_drawings(number, title, pages):
+    figures = []
+    for page_number in pages:
+        image = page_image_path(page_number)
+        if image.exists():
+            figures.append(
+                f'''<figure class="pdf-page-image">
+  <a href="../../assets/local-7-book/{image.name}"><img src="../../assets/local-7-book/{image.name}" alt="Section {number} source drawing page {page_number}"></a>
+  <figcaption>Source drawing page {page_number}</figcaption>
+</figure>'''
+            )
+    if not figures:
+        return ""
+    return f'''<aside class="local-7-images">
+  <h2>Source Drawing</h2>
+  <p class="meta">Use the scan to verify layout geometry and figure references.</p>
+  {''.join(figures)}
+</aside>'''
+
+
 def build_section_page(index, section, content):
-    number, title, _ = section
+    number, title, pages = section
     prev_link = ""
     next_link = ""
     if index > 0:
@@ -440,6 +460,9 @@ def build_section_page(index, section, content):
     if not article:
         article = '<section class="wiki-block"><h2>Extracted Text</h2><p>No usable text was extracted for this section.</p></section>'
 
+    drawings = render_source_drawings(number, title, pages)
+    lesson_class = "wiki-article local-7-split" if drawings else "wiki-article"
+
     page = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -459,8 +482,11 @@ def build_section_page(index, section, content):
       <h1>Section {number}: {html.escape(title)}</h1>
       <div class="card-actions section-pager">{prev_link}{next_link}</div>
     </header>
-    <article class="wiki-article">
-      {article}
+    <article class="{lesson_class}">
+      <div class="wiki-main">
+        {article}
+      </div>
+      {drawings}
     </article>
   </main>
 </body>
