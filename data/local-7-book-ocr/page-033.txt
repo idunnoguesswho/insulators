@@ -1,0 +1,1 @@
+Square to Round Where Round is Larger Information required: Square dimensions Round dimensions True height Steps: Use the same methods as in doing a Square to Round layout. Ngwe 1 Plan View figure 2 Bevation A1-A4 figure 3 Layout

@@ -16,6 +16,8 @@ const els = {
   chartCount: document.querySelector("#chartCount"),
   supplementCount: document.querySelector("#supplementCount"),
   layoutCount: document.querySelector("#layoutCount"),
+  referenceMeta: document.querySelector("#referenceMeta"),
+  referenceList: document.querySelector("#referenceList"),
 };
 
 function normalize(value) {
@@ -121,11 +123,36 @@ function renderTopics() {
   }
 }
 
+function renderReferences() {
+  if (!els.referenceList) return;
+  const references = new Map();
+  for (const entry of state.catalog.entries) {
+    const key = entry.sourcePath || entry.relativePath || entry.title;
+    if (!references.has(key)) {
+      references.set(key, {
+        title: entry.relativePath || entry.title,
+        sourcePath: entry.sourcePath || "",
+        category: entry.category || "Reference",
+      });
+    }
+  }
+
+  const sorted = Array.from(references.values()).sort((a, b) => a.title.localeCompare(b.title));
+  els.referenceMeta.textContent = `${sorted.length} source files processed from ${state.catalog.sourceRoot || "the source folder"}.`;
+  els.referenceList.innerHTML = "";
+  for (const reference of sorted) {
+    const item = document.createElement("li");
+    item.textContent = `${reference.title} (${reference.category})`;
+    els.referenceList.appendChild(item);
+  }
+}
+
 function render() {
   renderTabs();
   renderTopics();
   renderCards();
   renderCounts();
+  renderReferences();
 }
 
 function loadTheme() {

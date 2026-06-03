@@ -1,0 +1,1 @@
+Square to Round with Single Offset Information needed: Square Dimensions Round Dimensions Offset Dimensions True Height Figure 1 Plan View Steps are basically the same as Square to Round Figure 2 Elevation View True Height Figure 3 Layout

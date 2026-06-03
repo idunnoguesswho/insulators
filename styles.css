@@ -289,6 +289,32 @@ input[type="search"] {
   color: var(--muted);
 }
 
+.reference-fineprint {
+  margin-top: 26px;
+  padding: 14px 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.reference-fineprint summary {
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.reference-fineprint ol {
+  columns: 2;
+  gap: 28px;
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.reference-fineprint li {
+  break-inside: avoid;
+  margin: 0 0 6px;
+  line-height: 1.35;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -559,6 +585,76 @@ input[type="search"] {
   line-height: 1.18;
 }
 
+.wiki-detail {
+  max-width: 1040px;
+}
+
+.wiki-article {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.wiki-search {
+  display: grid;
+  gap: 8px;
+  max-width: 620px;
+  margin-top: 18px;
+}
+
+.wiki-search span {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.wiki-block {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: clamp(16px, 3vw, 24px);
+  background: var(--paper-strong);
+}
+
+.wiki-block h2 {
+  margin: 0 0 12px;
+  color: var(--accent-2);
+  font-size: 22px;
+  line-height: 1.18;
+}
+
+.wiki-block p,
+.wiki-block li {
+  line-height: 1.55;
+}
+
+.wiki-block ul,
+.procedure-list {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.procedure-list {
+  display: grid;
+  gap: 12px;
+}
+
+.procedure-list li {
+  padding-left: 4px;
+}
+
+.procedure-list span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.procedure-list p {
+  margin: 0;
+}
+
 .detail h2 {
   margin: 30px 0 8px;
   color: var(--accent-2);
@@ -811,6 +907,10 @@ th {
   .image-grid,
   .topic-layout {
     grid-template-columns: 1fr;
+  }
+
+  .reference-fineprint ol {
+    columns: 1;
   }
 
   .local-7-access,

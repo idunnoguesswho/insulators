@@ -1,0 +1,1 @@
+36 Rectangular to Round Information required: Include insulation in measurements Rectangle dimensions True height Steps are the same as Square to Round; use the long side of the rectangle for the Base Line figure 1 Plan View Apex True Height Figure 2 Elevation View Simt tWØts figure 3 Stretch-out NTS
