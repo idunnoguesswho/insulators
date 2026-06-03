@@ -23,55 +23,55 @@ TOPIC_DEFINITIONS = [
     {
         "id": "field-notebook",
         "title": "Field Notebook",
-        "description": "Snowman's half-size notebook material, notes, sketches, and working field references.",
+        "description": "Short Snowman's Notes lessons, field references, sketches, and working notebook sections.",
         "keywords": ["snowmans notes", "snowman", "notebook", "journal", "jon"],
     },
     {
         "id": "pattern-development",
         "title": "Pattern Development",
-        "description": "Parallel line development, tees, bends, gores, maps, layouts, and fitting geometry.",
+        "description": "Short layout lessons for parallel line development, tees, bends, gores, and fitting geometry.",
         "keywords": ["development", "tee", "gore", "pattern", "map", "dimension", "layout", "bend", "body"],
     },
     {
         "id": "reference-charts",
         "title": "Reference Charts",
-        "description": "Charts, size references, cards, AI field-reference sections, and quick lookup tables.",
+        "description": "Quick lookup charts, size tables, cards, formulas, and field reference topics.",
         "keywords": ["chart", "reference", "size", "section", "field_reference", "field reference", "conduit", "cards"],
     },
     {
         "id": "book-supplements",
         "title": "Book Supplements",
-        "description": "Supplemental books, worksheets, local books, notes, measuring guides, and supporting material.",
+        "description": "Supplemental lessons, worksheets, local book sections, measuring guides, and supporting notes.",
         "keywords": ["supplement", "local 7", "type me", "metal", "band", "measuring", "jons notes"],
     },
     {
         "id": "insulator-tools",
         "title": "Insulator Tools",
-        "description": "Tool-folder resources converted into readable web pages with images instead of downloads.",
+        "description": "Tool-folder lessons converted into readable text-and-image pages instead of downloads.",
         "keywords": ["insulator tools"],
     },
     {
         "id": "firestopping-safety",
         "title": "Firestopping & Safety",
-        "description": "Firestopping, asbestos, hazards, controls, inspection manuals, and related safety material.",
+        "description": "Short safety references for firestopping, asbestos, hazards, controls, and inspections.",
         "keywords": ["fire", "firestop", "asbestos", "hazard", "safety", "controls"],
     },
     {
         "id": "standards-specs",
         "title": "Standards & Specs",
-        "description": "Standards, specs, handbooks, working rules, local rules, and official guidance documents.",
+        "description": "Standards, specs, handbooks, working rules, and official guidance as reference topics.",
         "keywords": ["standard", "spec", "handbook", "rules", "cbr", "commercial", "industrial"],
     },
     {
         "id": "sketches-images",
         "title": "Sketches & Images",
-        "description": "Standalone images, diagrams, sketches, and extracted visual references.",
+        "description": "Standalone visual references, diagrams, sketches, and extracted page images.",
         "keywords": ["sketch", "image", "jpg", "png", "t-master", "hazards and controls"],
     },
     {
         "id": "source-inventory",
         "title": "Complete Source Inventory",
-        "description": "Every source file found in the provided folder, including oversized and unsupported files.",
+        "description": "Every source file found in the provided folder, kept as the archive behind the lessons.",
         "keywords": [],
         "include_all": True,
     },
@@ -377,6 +377,21 @@ def expand_workbook_sheet_entries(entries):
     return expanded
 
 
+def resource_kind(entry):
+    haystack = " ".join([
+        entry.get("title", ""),
+        entry.get("category", ""),
+        entry.get("relativePath", ""),
+    ]).lower()
+    if entry.get("resourceMode") == "xlsx-sheet" or re.search(r"chart|table|card|size|flange|fraction|decimal|reference", haystack):
+        return "Quick reference"
+    if re.search(r"lesson|unit|development|tee|gore|layout|pattern|method|formula|section|handbook|notebook", haystack):
+        return "Short lesson"
+    if entry.get("thumbnailUrl") or entry.get("extension") in {"JPG", "JPEG", "PNG", "GIF", "WEBP"}:
+        return "Image reference"
+    return "Source record"
+
+
 def entry_card(entry, prefix="../"):
     status = ""
     if entry.get("assetStatus") == "text-resource":
@@ -401,7 +416,7 @@ def entry_card(entry, prefix="../"):
     return f"""
 <article class=\"resource-card\">
   {thumb}
-  <div class=\"card-top\"><span class=\"pill\">{html.escape(entry['extension'])}</span><span class=\"file-size\">{entry['sizeMB']} MB</span></div>
+  <div class=\"card-top\"><span class=\"pill\">{html.escape(resource_kind(entry))}</span><span class=\"file-size\">{entry['sizeMB']} MB</span></div>
   <h3>{html.escape(entry['title'])}</h3>
   <p class=\"summary\">{html.escape(entry['summary'])}</p>
   <div class=\"card-actions\">{''.join(actions)}</div>
@@ -442,15 +457,15 @@ def render_topic_page(topic, entries, out_dir):
   <main class=\"topic-page\">
     <section class=\"sheet detail topic-hero\">
       <a href=\"../index.html\" class=\"back-link\">Back to field notebook</a>
-      <p class=\"eyebrow\">Topic</p>
+      <p class=\"eyebrow\">Lessons & References</p>
       <h1>{html.escape(topic['title'])}</h1>
       <p>{html.escape(topic['description'])}</p>
-      <p class=\"meta\">{len(topic_entries)} resources included</p>
+      <p class=\"meta\">{len(topic_entries)} lessons and references included</p>
     </section>
     <section class=\"topic-layout\">
       <div class=\"topic-main\">{''.join(highlights)}</div>
       <aside class=\"topic-source-list sheet\">
-        <h2>Sources In This Topic</h2>
+        <h2>Lessons & Reference Cards</h2>
         <div class=\"card-grid compact\">{cards}</div>
       </aside>
     </section>

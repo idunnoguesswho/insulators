@@ -30,6 +30,18 @@ function formatStatus(entry) {
   return entry.extraction || "";
 }
 
+function resourceKind(entry) {
+  const haystack = normalize(`${entry.title} ${entry.category} ${entry.relativePath}`);
+  if (entry.resourceMode === "xlsx-sheet" || /chart|table|card|size|flange|fraction|decimal|reference/.test(haystack)) {
+    return "Quick reference";
+  }
+  if (/lesson|unit|development|tee|gore|layout|pattern|method|formula|section|handbook|notebook/.test(haystack)) {
+    return "Short lesson";
+  }
+  if (entry.thumbnailUrl || entry.extension === "JPG" || entry.extension === "PNG") return "Image reference";
+  return "Source record";
+}
+
 function filteredEntries() {
   const q = normalize(state.query);
   return state.catalog.entries.filter((entry) => {
@@ -61,8 +73,8 @@ function renderTabs() {
 function renderCards() {
   const entries = filteredEntries();
   els.grid.innerHTML = "";
-  els.title.textContent = state.category === "All" ? "All references" : state.category;
-  els.meta.textContent = `${entries.length} of ${state.catalog.entries.length} files`;
+  els.title.textContent = state.category === "All" ? "All lessons and references" : state.category;
+  els.meta.textContent = `${entries.length} of ${state.catalog.entries.length} resources`;
 
   for (const entry of entries) {
     const card = els.template.content.cloneNode(true);
@@ -74,7 +86,7 @@ function renderCards() {
       thumb.alt = "";
       article.insertBefore(thumb, article.querySelector(".card-top"));
     }
-    card.querySelector(".pill").textContent = entry.extension;
+    card.querySelector(".pill").textContent = resourceKind(entry);
     card.querySelector(".file-size").textContent = `${entry.sizeMB} MB`;
     card.querySelector("h3").textContent = entry.title;
     card.querySelector(".summary").textContent = entry.summary;
@@ -104,7 +116,7 @@ function renderTopics() {
     const link = document.createElement("a");
     link.className = "topic-card";
     link.href = topic.url;
-    link.innerHTML = `<span>${topic.count} resources</span><strong>${topic.title}</strong><p>${topic.description}</p>`;
+    link.innerHTML = `<span>${topic.count} lessons / refs</span><strong>${topic.title}</strong><p>${topic.description}</p>`;
     els.topicGrid.appendChild(link);
   }
 }

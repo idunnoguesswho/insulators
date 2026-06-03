@@ -332,6 +332,7 @@ input[type="search"] {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.15;
 }
 
 .pill {
@@ -339,6 +340,8 @@ input[type="search"] {
   border-radius: 999px;
   padding: 5px 8px;
   background: var(--accent-2);
+  max-width: 150px;
+  text-wrap: balance;
 }
 
 .resource-card h3 {

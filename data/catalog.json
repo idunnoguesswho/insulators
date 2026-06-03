@@ -18,63 +18,63 @@
     {
       "id": "field-notebook",
       "title": "Field Notebook",
-      "description": "Snowman's half-size notebook material, notes, sketches, and working field references.",
+      "description": "Short Snowman's Notes lessons, field references, sketches, and working notebook sections.",
       "url": "topics/field-notebook.html",
       "count": 26
     },
     {
       "id": "pattern-development",
       "title": "Pattern Development",
-      "description": "Parallel line development, tees, bends, gores, maps, layouts, and fitting geometry.",
+      "description": "Short layout lessons for parallel line development, tees, bends, gores, and fitting geometry.",
       "url": "topics/pattern-development.html",
       "count": 24
     },
     {
       "id": "reference-charts",
       "title": "Reference Charts",
-      "description": "Charts, size references, cards, AI field-reference sections, and quick lookup tables.",
+      "description": "Quick lookup charts, size tables, cards, formulas, and field reference topics.",
       "url": "topics/reference-charts.html",
       "count": 20
     },
     {
       "id": "book-supplements",
       "title": "Book Supplements",
-      "description": "Supplemental books, worksheets, local books, notes, measuring guides, and supporting material.",
+      "description": "Supplemental lessons, worksheets, local book sections, measuring guides, and supporting notes.",
       "url": "topics/book-supplements.html",
       "count": 36
     },
     {
       "id": "insulator-tools",
       "title": "Insulator Tools",
-      "description": "Tool-folder resources converted into readable web pages with images instead of downloads.",
+      "description": "Tool-folder lessons converted into readable text-and-image pages instead of downloads.",
       "url": "topics/insulator-tools.html",
       "count": 4
     },
     {
       "id": "firestopping-safety",
       "title": "Firestopping & Safety",
-      "description": "Firestopping, asbestos, hazards, controls, inspection manuals, and related safety material.",
+      "description": "Short safety references for firestopping, asbestos, hazards, controls, and inspections.",
       "url": "topics/firestopping-safety.html",
       "count": 7
     },
     {
       "id": "standards-specs",
       "title": "Standards & Specs",
-      "description": "Standards, specs, handbooks, working rules, local rules, and official guidance documents.",
+      "description": "Standards, specs, handbooks, working rules, and official guidance as reference topics.",
       "url": "topics/standards-specs.html",
       "count": 12
     },
     {
       "id": "sketches-images",
       "title": "Sketches & Images",
-      "description": "Standalone images, diagrams, sketches, and extracted visual references.",
+      "description": "Standalone visual references, diagrams, sketches, and extracted page images.",
       "url": "topics/sketches-images.html",
       "count": 10
     },
     {
       "id": "source-inventory",
       "title": "Complete Source Inventory",
-      "description": "Every source file found in the provided folder, including oversized and unsupported files.",
+      "description": "Every source file found in the provided folder, kept as the archive behind the lessons.",
       "url": "topics/source-inventory.html",
       "count": 115
     }
