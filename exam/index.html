@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Seal Exam Test Bank — Snowman's Field Notebook</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    /* ── Controls bar ── */
+    .exam-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 14px 0;
+      margin-bottom: 12px;
+    }
+    .exam-controls select {
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: .82rem;
+      background: var(--paper-strong);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .exam-controls .button { font-size: .82rem; padding: 7px 14px; }
+    .progress-wrap {
+      margin-left: auto;
+      font-size: .78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    #progressBar {
+      width: 100px; height: 6px;
+      background: var(--line);
+      border-radius: 3px;
+    }
+    #progressFill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .3s; }
+
+    /* ── Category pills ── */
+    .cat-pills {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 16px;
+    }
+    .pill {
+      font-size: .72rem;
+      padding: 4px 11px;
+      border-radius: 20px;
+      border: 1.5px solid var(--line);
+      cursor: pointer;
+      background: var(--paper-strong);
+      color: var(--muted);
+      font-weight: 600;
+      transition: all .15s;
+    }
+    .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .pill:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Stats ── */
+    .stats-bar {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .stats-bar strong { color: var(--ink); }
+
+    /* ── Card grid ── */
+    .flash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Flashcard ── */
+    .flashcard {
+      perspective: 1000px;
+      height: 210px;
+      cursor: pointer;
+    }
+    .flashcard.answered { opacity: .5; }
+    .card-inner {
+      position: relative;
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .45s cubic-bezier(.4,0,.2,1);
+      border-radius: 10px;
+    }
+    .flashcard.flipped .card-inner { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+      box-shadow: var(--shadow);
+    }
+    .card-back-face {
+      background: var(--accent-2);
+      border-color: var(--accent);
+      transform: rotateY(180deg);
+      color: #e8f4ff;
+    }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+      align-self: flex-start;
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent);
+    }
+    .card-back-face .cat-badge {
+      background: rgba(255,255,255,.15);
+      color: #bfdbfe;
+    }
+    .q-num {
+      font-size: .65rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .card-back-face .q-num { color: #93c5fd; }
+    .q-text {
+      font-size: .86rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.45;
+      flex: 1;
+    }
+    .card-back-face .q-text { color: #e8f4ff; font-weight: 400; font-size: .82rem; }
+    .flip-hint {
+      font-size: .65rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 6px;
+    }
+    .card-back-face .flip-hint { color: rgba(255,255,255,.45); }
+    .mark-btn {
+      margin-top: 8px;
+      padding: 4px 10px;
+      font-size: .7rem;
+      border: 1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.12);
+      color: #e8f4ff;
+      border-radius: 5px;
+      cursor: pointer;
+      align-self: flex-start;
+      transition: background .2s;
+    }
+    .mark-btn:hover { background: rgba(255,255,255,.25); }
+    .flashcard.answered .mark-btn { background: #16a34a; border-color: #16a34a; color: #fff; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Snowman's Notes</p>
+      <h1>Red Seal Exam Test Bank</h1>
+    </div>
+    <a class="button ghost" href="../index.html">← Home</a>
+  </header>
+
+  <main>
+    <section class="hero sheet" style="margin-bottom:18px;">
+      <div>
+        <p class="kicker">IP Red Seal — Heat &amp; Frost Insulator</p>
+        <h2>200 Flashcards</h2>
+        <p style="color:var(--muted);margin:8px 0 0;font-size:.9rem;">Click any card to flip and reveal the answer. Mark cards reviewed to track progress. Progress saves in your browser.</p>
+      </div>
+      <div>
+        <div class="exam-controls">
+          <select id="catFilter">
+            <option value="all">All Categories</option>
+            <option value="Materials">Materials &amp; Properties</option>
+            <option value="Measurements">Measurements &amp; Layout</option>
+            <option value="Installation">Installation Techniques</option>
+            <option value="Firestopping">Firestopping &amp; Fire Safety</option>
+            <option value="Safety">Safety &amp; Hazards</option>
+            <option value="Standards">Standards &amp; Codes</option>
+            <option value="Tools">Tools &amp; Equipment</option>
+            <option value="Math">Math &amp; Geometry</option>
+            <option value="Systems">Systems &amp; Applications</option>
+            <option value="Trade Knowledge">Trade Knowledge</option>
+          </select>
+          <button class="button" id="shuffleBtn">⟳ Shuffle</button>
+          <button class="button ghost" id="resetBtn">↺ Reset</button>
+          <div class="progress-wrap">
+            <span id="progressText">0 / 200</span>
+            <div id="progressBar"><div id="progressFill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="cat-pills" id="catPills"></div>
+        <div class="stats-bar">
+          <span>Showing: <strong id="statShowing">200</strong></span>
+          <span>Reviewed: <strong id="statReviewed">0</strong></span>
+          <span>Remaining: <strong id="statRemaining">200</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <div class="flash-grid" id="flashGrid"></div>
+  </main>
+
+  <script>
+const QUESTIONS = [
+  // ── MATERIALS & PROPERTIES ──────────────────────────────────────────────
+  { cat:"Materials", q:"What is the primary purpose of thermal insulation?", a:"To reduce heat transfer between objects or environments, minimizing energy loss by conduction, convection, and radiation." },
+  { cat:"Materials", q:"What are the three main mechanisms of heat transfer that insulation controls?", a:"Conduction (heat moving through solids), convection (heat moving through fluids/air), and radiation (heat transferring through electromagnetic waves)." },
+  { cat:"Materials", q:"Define 'R-value' and what it measures.", a:"R-value (thermal resistance) measures insulation's ability to resist heat flow. Higher R-value = better insulating performance." },
+  { cat:"Materials", q:"What does 'k-value' (thermal conductivity) represent?", a:"The rate at which heat passes through one unit thickness of material per unit area per unit temperature difference. Lower k-value = better insulator." },
+  { cat:"Materials", q:"What is mineral wool (rock wool) and what are its key properties?", a:"Fibrous insulation made from molten rock or slag. Key properties: fire resistance, acoustic performance, moisture resistance, high-temp tolerance (up to ~1000°C)." },
+  { cat:"Materials", q:"What temperature range is fiberglass (glass wool) insulation typically rated for?", a:"Typically rated up to 230°C (450°F) for standard pipe insulation; high-temp blended glass up to ~540°C (1000°F)." },
+  { cat:"Materials", q:"What is calcium silicate insulation used for and why?", a:"High-temperature industrial applications (up to 650°C / 1200°F). Used on steam lines, boilers, and hot process equipment because it is rigid, load-bearing, and fire-resistant." },
+  { cat:"Materials", q:"Describe cellular glass insulation and its main advantage.", a:"A rigid foam made of sealed glass cells. Main advantage: completely impermeable to water and vapor, making it ideal for below-ambient (cold) systems and buried piping." },
+  { cat:"Materials", q:"What is polyisocyanurate (polyiso) foam and where is it commonly used?", a:"A closed-cell rigid foam insulation. Commonly used on low-temperature refrigeration piping, vessels, and flat roofs due to its high R-value per inch." },
+  { cat:"Materials", q:"What is flexible elastomeric foam (e.g., Armaflex) and its primary use?", a:"A closed-cell rubber-based flexible foam. Primarily used on cold piping, HVAC systems, and chilled water lines to prevent condensation." },
+  { cat:"Materials", q:"What is the difference between 'open-cell' and 'closed-cell' foam insulation?", a:"Open-cell foam has interconnected air pockets (lower R-value, absorbs moisture). Closed-cell foam has sealed cells (higher R-value, moisture/vapor barrier, more rigid)." },
+  { cat:"Materials", q:"What is expanded perlite insulation?", a:"An inorganic insulation made from expanded volcanic glass. Used in high-temperature and cryogenic applications; excellent fire resistance and low thermal conductivity." },
+  { cat:"Materials", q:"What is aerogel insulation known for?", a:"Extremely low thermal conductivity (best available), making it ideal where space is limited. Used in petrochemical, aerospace, and cryogenic applications. Very expensive." },
+  { cat:"Materials", q:"What is the purpose of a vapour retarder (vapour barrier) in insulation systems?", a:"To limit the diffusion of moisture/vapour into insulation, preventing condensation within the insulation that would degrade performance and cause corrosion." },
+  { cat:"Materials", q:"What is 'perm rating' in relation to vapour retarders?", a:"A measure of vapour permeance. Lower perm rating = less moisture transmission. Vapour retarders typically require ≤ 0.1 perms for cold systems." },
+  { cat:"Materials", q:"What is jacketing in insulation systems and what materials are commonly used?", a:"The outer protective covering over insulation. Common materials: aluminium sheet, stainless steel, PVC, canvas mastic, and all-service jacket (ASJ)." },
+  { cat:"Materials", q:"What is ASJ (All-Service Jacket) facing?", a:"A laminated facing consisting of kraft paper, fibreglass scrim reinforcement, and polyethylene film. Standard factory-applied facing on duct and pipe insulation." },
+  { cat:"Materials", q:"What is the difference between 'pipe insulation' and 'equipment insulation'?", a:"Pipe insulation (pre-formed half/full sections) is sized to fit standard pipe ODs. Equipment insulation uses flexible batts, blankets, or custom-fabricated sections for vessels, tanks, and irregular shapes." },
+  { cat:"Materials", q:"What is 'insulation finishing cement'?", a:"A trowel-applied coating used to smooth, fill, and finish insulation surfaces; provides a hard, weather-resistant outer layer on high-temperature systems." },
+  { cat:"Materials", q:"What is 'operating temperature' vs 'service temperature' for insulation?", a:"Operating temperature is the actual process temperature of the pipe/equipment. Service temperature is the maximum temperature rating of the insulation material itself — insulation must exceed operating temp." },
+
+  // ── MEASUREMENTS & LAYOUT ───────────────────────────────────────────────
+  { cat:"Measurements", q:"How is the nominal pipe size (NPS) related to the actual outside diameter of a pipe?", a:"NPS is a nominal designation, not the actual OD. For NPS ≤ 12, the actual OD is larger than the nominal size. For NPS ≥ 14, the nominal size equals the actual OD in inches." },
+  { cat:"Measurements", q:"What is the formula to find the outside diameter of an insulated pipe?", a:"Insulated OD = Pipe OD + (2 × insulation thickness). Example: 4\" pipe (OD 4.5\") + 2\" insulation = 4.5 + 4 = 8.5\" insulated OD." },
+  { cat:"Measurements", q:"How do you calculate the circumference of a pipe?", a:"Circumference = π × D (diameter). Using π ≈ 3.1416, a 6\" OD pipe: C = 3.1416 × 6 = 18.85 inches." },
+  { cat:"Measurements", q:"What is the 'gore' method in insulator layout?", a:"A technique for cutting and fitting flat material (metal jacketing) around curved surfaces (elbows, heads). Material is cut into gore (wedge) shapes that conform to the curve when assembled." },
+  { cat:"Measurements", q:"What is the 'parallel line development' method used for?", a:"A geometric technique for developing the flat patterns of cylindrical intersections (tees and elbows) so flat sheet material can be cut and rolled to fit 3D pipe fittings." },
+  { cat:"Measurements", q:"When calculating insulation for a 90° elbow, what dimensions are required?", a:"The pipe OD, the insulation thickness, the bend radius (long radius = 1.5× NPS, short radius = 1× NPS), and whether the elbow is mitered or radiused to determine material quantity and pattern." },
+  { cat:"Measurements", q:"What is the standard long-radius elbow bend radius formula?", a:"Long-radius 90° elbow: centre-line radius = 1.5 × NPS. Example: 6\" NPS elbow has a 9\" centre-line radius." },
+  { cat:"Measurements", q:"What is the purpose of the 'gore rule' or 'gore stick'?", a:"A specialized measuring tool used to accurately calculate and mark gore dimensions on flat sheet jacketing material for fitting around elbows without wrinkles or gaps." },
+  { cat:"Measurements", q:"What does 'OD to OD' mean in pipe insulation sizing?", a:"The measurement from the outside surface of the insulation (or jacket) on one side to the opposite side — i.e., the total outside diameter of the finished insulated pipe." },
+  { cat:"Measurements", q:"How many millimetres are in one inch?", a:"25.4 mm = 1 inch exactly. Used constantly to convert between imperial pipe sizes and metric insulation thickness specifications." },
+  { cat:"Measurements", q:"How do you find the area of a flat rectangular section of jacketing?", a:"Area = Length × Width. All dimensions must be in the same unit. Used to calculate material quantities and waste." },
+  { cat:"Measurements", q:"What is the formula for the surface area of a cylinder (pipe section)?", a:"Surface area = π × D × L, where D is the outer diameter and L is the length. Gives the area of jacketing material required." },
+  { cat:"Measurements", q:"What is a 'mitered elbow' in insulation?", a:"An elbow fabricated by cutting pipe insulation at angles (miters) and joining the pieces to form the bend, rather than using pre-molded elbow sections." },
+  { cat:"Measurements", q:"What is the standard overlap for aluminium jacketing longitudinal seams?", a:"Typically 50 mm (2 inches) overlap, lapped in a weather-resistant manner (upper piece laps over lower) secured with screws or banding." },
+  { cat:"Measurements", q:"What does 'mean circumference' refer to in an elbow calculation?", a:"The circumference measured at the neutral axis (centreline) of the elbow. Used to calculate the length of insulation material needed to wrap the elbow." },
+  { cat:"Measurements", q:"What is an 'unequal tee' in pipe fitting geometry?", a:"A tee where the branch size differs from the run size. Requires different layout calculations than an equal tee because the intersection curve is not symmetrical." },
+  { cat:"Measurements", q:"What is the significance of the '2-diameter method' for spacing hangers on insulated piping?", a:"Hangers are typically spaced at 2× the insulated pipe OD as a practical rule for adequate support without compressing insulation." },
+  { cat:"Measurements", q:"When cutting a flat pattern for a conical taper, what geometric method is used?", a:"Radial line development — lines are projected from the apex (point) of the cone, and the pattern is laid out as a sector of a circle." },
+  { cat:"Measurements", q:"What is 'takeout' in the context of elbow fittings?", a:"The length subtracted from straight piping at each end of an elbow to account for the fitting itself. Takeout = centre-to-face dimension. Ensures correct cut lengths for pipe spools." },
+  { cat:"Measurements", q:"How is the pitch (taper) of a cone expressed?", a:"As a ratio or angle: e.g., a 4:1 taper means 4 units of run for every 1 unit of rise. Or expressed as an angle in degrees from the centreline." },
+
+  // ── INSTALLATION TECHNIQUES ─────────────────────────────────────────────
+  { cat:"Installation", q:"What is the correct way to stagger longitudinal and circumferential joints in multi-layer insulation?", a:"Longitudinal seams must be offset 90° between layers; circumferential joints offset ≥ one pipe diameter. This eliminates thermal bridging through the joints." },
+  { cat:"Installation", q:"Why is it important to ensure insulation is installed without gaps or voids?", a:"Gaps create thermal bridges — areas of high heat transfer — which reduce system efficiency, can cause condensation (on cold systems), and accelerate pipe corrosion." },
+  { cat:"Installation", q:"How should insulation be applied to vertical piping?", a:"With support rings (insulation support rings) at regular intervals (typically every 3–4.5 m / 10–15 ft) to prevent the insulation from settling under its own weight." },
+  { cat:"Installation", q:"What is the minimum recommended thickness of aluminium jacketing for outdoor piping?", a:"Minimum 0.016\" (0.4 mm) for smooth aluminium; 0.020\" (0.5 mm) corrugated is common. Indoor applications may allow lighter gauges." },
+  { cat:"Installation", q:"What is 'wicking' and how is it prevented in cold-pipe insulation?", a:"Wicking is moisture travelling along pins, hangers, or other penetrations into insulation. Prevented by sealing all penetrations with vapour-retarder mastic and using breaker strips at supports." },
+  { cat:"Installation", q:"Describe the proper technique for installing pre-formed pipe insulation sections.", a:"Slide sections over pipe, align butt joints, stagger joints between layers, secure with wire, staples, or banding, then apply jacket. Do not compress insulation; maintain specified thickness." },
+  { cat:"Installation", q:"What is a 'break' or 'vapour break' and when is it required?", a:"A seal that stops vapour migration along the surface of insulation at transitions (e.g., at wall penetrations, hangers). Required on all below-ambient systems to prevent moisture ingress." },
+  { cat:"Installation", q:"What is the standard method for applying insulation to a flanged joint?", a:"Insulate the flange with a removable insulation cover (box cover) to allow maintenance access. Seal all edges with vapour retarder on cold systems." },
+  { cat:"Installation", q:"Why are expansion/contraction gaps required in hot-pipe insulation systems?", a:"Hot pipes expand significantly. Without engineered expansion joints and soft cushion at anchors, the insulation can crack and jacketing buckle, allowing moisture entry." },
+  { cat:"Installation", q:"What does it mean to 'butt' insulation joints vs. 'overlap' them?", a:"Butt joints have the cut ends touching (preferred for joints that are then covered). Overlap joints lap one piece over another for a sealed longitudinal seam on jacketing." },
+  { cat:"Installation", q:"What is the proper application sequence for a high-temperature calcium silicate system?", a:"1) Clean pipe. 2) Apply inner layer(s) of calcium silicate, wired in place. 3) Apply outer layer(s) staggered 90°. 4) Apply finishing cement or metal jacketing." },
+  { cat:"Installation", q:"What is 'banding' in jacketing installation?", a:"Stainless steel or aluminium straps (bands) secured with buckles or seals, applied over metal jacketing to hold it firmly against the insulation and provide weather-tight seams." },
+  { cat:"Installation", q:"How should insulation be terminated at a pipe support or hanger?", a:"Use a high-density insert (hard insulation block rated for the service temp) at the support point to prevent crushing, then continue standard insulation up to the insert." },
+  { cat:"Installation", q:"What is the procedure for insulating underground (buried) piping?", a:"Apply cellular glass or closed-cell foam insulation, waterproofed with a compatible coating. Use a protective jacket (HDPE or urethane coating) to prevent ground moisture infiltration." },
+  { cat:"Installation", q:"How do you insulate a valve properly?", a:"Use a removable valve cover (insulation box) filled with soft insulation to allow quick removal for maintenance. Secure with straps; seal edges on cold systems with vapour retarder." },
+  { cat:"Installation", q:"What is the maximum recommended service temperature for PVC jacketing?", a:"Approximately 60°C (140°F). PVC is not suitable for hot piping; it is used for cold water, HVAC, and chilled water applications in indoor environments." },
+  { cat:"Installation", q:"Why should insulation never be installed on a wet or uncleaned pipe surface?", a:"Trapped moisture causes corrosion under insulation (CUI). Contaminants can degrade adhesives and coatings. Pipe must be clean, dry, and properly primed/coated first." },
+  { cat:"Installation", q:"What is a 'cladding' vs 'jacketing' in insulation?", a:"The terms are often used interchangeably. Technically, cladding refers to the complete outer protective system (may include flashing, sealants). Jacketing specifically refers to the sheet metal or PVC outer layer." },
+  { cat:"Installation", q:"How are insulation thickness transitions (tapers) handled at equipment nozzles?", a:"Insulation is tapered (bevelled) using a bevel cut at the nozzle so the insulation transitions smoothly from the vessel/tank thickness to the nozzle pipe thickness." },
+  { cat:"Installation", q:"What is 'corrosion under insulation' (CUI) and how is it mitigated?", a:"CUI is accelerated corrosion occurring beneath insulation from trapped moisture. Mitigated by: protective pipe coatings (e.g., coal tar epoxy), proper vapour seals, avoiding water-absorbing insulation on susceptible systems." },
+
+  // ── FIRESTOPPING & FIRE SAFETY ──────────────────────────────────────────
+  { cat:"Firestopping", q:"What is the primary purpose of a firestop system?", a:"To restore the fire resistance rating of a fire-rated wall or floor assembly after a penetration has been made through it by pipes, cables, or ducts." },
+  { cat:"Firestopping", q:"What does 'F-rating' mean for a firestop assembly?", a:"The number of hours a firestop system prevents the passage of flame through the penetration. Must equal or exceed the fire resistance rating of the assembly." },
+  { cat:"Firestopping", q:"What does 'T-rating' mean for a firestop assembly?", a:"The number of hours before the temperature on the non-fire side of the firestop exceeds 163°C (325°F) above ambient. Limits heat conduction through the penetration." },
+  { cat:"Firestopping", q:"What is an 'L-rating' in firestop systems?", a:"Measures air leakage through the firestop assembly at ambient temperature. Low L-rating = high airtightness, important for smoke control systems and energy codes." },
+  { cat:"Firestopping", q:"What is the difference between a 'through-penetration firestop' and a 'joint firestop'?", a:"A through-penetration firestop seals the annular space around a pipe/conduit passing through a fire-rated assembly. A joint firestop seals the gap between two fire-rated assemblies (e.g., curtain wall to floor)." },
+  { cat:"Firestopping", q:"What is an 'annular space' in firestopping?", a:"The gap between the penetrating item (pipe, cable) and the edge of the opening in the fire-rated wall or floor. Must be completely filled with listed firestop material." },
+  { cat:"Firestopping", q:"What is intumescent firestop material?", a:"A material that expands significantly when exposed to heat (fire). As a combustible pipe melts, the intumescent material swells to fill the void and maintain the fire seal." },
+  { cat:"Firestopping", q:"Name three common types of firestop products.", a:"1) Firestop caulk/sealant. 2) Intumescent collars/wraps. 3) Firestop mortar/putty. 4) Intumescent foam. 5) Firestop pillows. (Any three accepted)" },
+  { cat:"Firestopping", q:"When is an intumescent pipe collar required vs. firestop caulk?", a:"Intumescent collars are required when combustible (plastic) piping passes through fire-rated assemblies — the collar squeezes the melting pipe shut. Caulk is used for non-combustible (steel/copper) pipe annular spaces." },
+  { cat:"Firestopping", q:"What is a ULC-listed firestop system?", a:"A system tested and listed by Underwriters Laboratories of Canada (ULC) that meets the required fire resistance rating. Must be installed exactly per the listing — no substitutions." },
+  { cat:"Firestopping", q:"What is 'System No.' in firestop documentation?", a:"A unique identifier for a tested and listed firestop assembly. Specifies the exact wall/floor type, penetrant size, annular space limits, and firestop products allowed." },
+  { cat:"Firestopping", q:"Who is responsible for inspecting installed firestop systems?", a:"A qualified firestop inspection professional (CFSI or authority having jurisdiction). In many jurisdictions, third-party inspection is mandatory for ICI construction." },
+  { cat:"Firestopping", q:"What is the maximum annular space for most firestop caulk systems?", a:"Typically 50 mm (2 inches). Larger gaps require mortar packing, backer rod, or an engineered system to achieve the listed configuration." },
+  { cat:"Firestopping", q:"What is a 'backer rod' used for in firestopping?", a:"A compressible foam rod inserted into larger annular spaces or joints to fill depth, reducing the amount of sealant needed and ensuring proper sealant shape for performance." },
+  { cat:"Firestopping", q:"What does it mean when a firestop system requires a 'sleeve'?", a:"A steel sleeve must be installed in the opening before the pipe is inserted. The sleeve size and gauge are specified in the system listing and are part of achieving the F/T-rating." },
+  { cat:"Firestopping", q:"What National Building Code (NBC) requirement drives firestopping in Canada?", a:"NBC Part 3 (Fire Protection, Occupant Safety, and Accessibility) requires that penetrations through fire separations be firestopped to maintain the assembly's rating. Applies to all ICI and residential buildings." },
+  { cat:"Firestopping", q:"What is a 'fire separation' in building code terms?", a:"A construction assembly (wall, floor, ceiling) that is designed to provide a specified fire resistance rating to separate building compartments and retard fire spread." },
+  { cat:"Firestopping", q:"What is the purpose of documentation/as-built records for firestop installations?", a:"To provide evidence of code compliance, facilitate inspections, enable future maintenance, and ensure systems are reinstated correctly if penetrations are modified." },
+  { cat:"Firestopping", q:"Can a firestop product be substituted with a 'similar' unlisted product? Why or why not?", a:"No. Only tested and listed products installed per the specific system listing are acceptable. Substitution voids the listing and may not provide the required fire resistance." },
+  { cat:"Firestopping", q:"What happens to a firestop system if the pipe size is changed from what is listed?", a:"The listed system is voided. A new listed system meeting the new pipe size must be identified and installed. The authority having jurisdiction must be notified." },
+
+  // ── SAFETY & HAZARDS ────────────────────────────────────────────────────
+  { cat:"Safety", q:"What does WHMIS stand for and what does it regulate?", a:"Workplace Hazardous Materials Information System. Regulates the classification, labelling, and communication of workplace hazardous materials in Canada." },
+  { cat:"Safety", q:"What are the two main components of WHMIS 2015?", a:"1) Safety Data Sheets (SDS) — 16-section documents providing hazard and safe handling information. 2) Product Labels — supplier labels and workplace labels with pictograms and hazard statements." },
+  { cat:"Safety", q:"What are the GHS/WHMIS pictograms an insulator is most likely to encounter?", a:"Flame (flammables), Health Hazard (CMR - carcinogen/mutagen/reproduc. toxic), Skull and Crossbones (acute toxicity), Corrosion, and Exclamation Mark (irritants)." },
+  { cat:"Safety", q:"What are the health hazards associated with refractory ceramic fibre (RCF) insulation?", a:"RCF is classified as a possible human carcinogen (Group 2B, IARC). Fibres can lodge in lungs. Requires respiratory protection (P100 or N100), skin and eye protection during installation and removal." },
+  { cat:"Safety", q:"What type of respiratory protection is required when working with asbestos-containing insulation?", a:"Minimum: half-face respirator with P100 (HEPA) cartridges. Typically a full-face air-purifying respirator or supplied-air respirator, plus full Tyvek suit, in regulated asbestos work." },
+  { cat:"Safety", q:"What is 'Asbestos-Containing Material' (ACM) and where might an insulator encounter it?", a:"Any material with >1% asbestos. Insulators may encounter it in older pipe lagging, block insulation, pipe fitting cement, duct wrap, and equipment insulation in pre-1990 buildings." },
+  { cat:"Safety", q:"What is the hierarchy of controls for hazardous material exposure?", a:"1) Elimination. 2) Substitution. 3) Engineering controls (ventilation). 4) Administrative controls (procedures, rotation). 5) PPE. Apply highest level feasible first." },
+  { cat:"Safety", q:"What is a 'hot work permit' and when does an insulator need one?", a:"Written authorization for work that produces sparks, flame, or heat in a potentially flammable atmosphere. Required when cutting/welding near flammable insulations (e.g., PIR foam) or in classified areas." },
+  { cat:"Safety", q:"What is a confined space and what are the entry requirements?", a:"A space large enough to enter, with limited entry/exit, not designed for continuous occupancy. Requires: hazard assessment, atmospheric testing, entry permit, rescue plan, attendant on standby." },
+  { cat:"Safety", q:"What is a FLHA (Field Level Hazard Assessment)?", a:"A site-specific, pre-task hazard identification completed by the work crew before starting a job. Identifies hazards present, controls applied, and required PPE for that specific day and location." },
+  { cat:"Safety", q:"What does 'lockout/tagout' (LOTO) mean for an insulator?", a:"Procedure to de-energize and lock out equipment before insulating on or around moving or energized parts. Protects against unexpected start-up: isolate energy source, lock out, tag, and verify zero energy state." },
+  { cat:"Safety", q:"At what height does fall protection become mandatory in most Canadian jurisdictions?", a:"3 metres (approximately 10 feet) in most provinces. Some jurisdictions (e.g., Manitoba) require it at 1.2 m for certain tasks. Always verify local legislation." },
+  { cat:"Safety", q:"What types of fall protection are commonly used by insulators?", a:"1) Full-body harness with lanyard/SRL on anchor points. 2) Guardrails and toe boards. 3) Safety nets. 4) Work platforms and scaffolding." },
+  { cat:"Safety", q:"What is silica dust and why is it hazardous for insulators?", a:"Crystalline silica (SiO₂) is found in perlite, calcium silicate, and some finishing cements. Inhalation causes silicosis (irreversible lung disease) and increases lung cancer risk. Requires N95 minimum, P100 preferred." },
+  { cat:"Safety", q:"What does 'Occupational Exposure Limit' (OEL) or 'TLV' refer to?", a:"The maximum concentration of an airborne substance a worker can be exposed to over a working day/week without adverse health effects. Expressed as TWA (time-weighted average) or STEL (short-term exposure limit)." },
+  { cat:"Safety", q:"What are the key components of a JSA (Job Safety Analysis)?", a:"Step-by-step breakdown of each task, the hazards associated with each step, and the controls to eliminate or mitigate each hazard. Used as a training and compliance tool." },
+  { cat:"Safety", q:"What is the purpose of a Safety Data Sheet (SDS) Section 8?", a:"Section 8 covers Exposure Controls and Personal Protective Equipment — specifying OELs, engineering controls, and required PPE for safe handling of the material." },
+  { cat:"Safety", q:"Why should insulation on steam lines never be walked on or used as a step?", a:"Steam-line insulation is not designed for mechanical load. Walking on it damages the insulation and jacketing, creates gaps, and can cause serious burn hazards from steam release." },
+  { cat:"Safety", q:"What is 'heat stress' and how is it managed on insulation jobsites?", a:"Heat stress is a condition caused by excessive body heat (hot ambient temps + physical work + PPE). Managed by: water breaks, shade, buddy system, acclimatization, and recognizing heat exhaustion/stroke symptoms." },
+  { cat:"Safety", q:"What first aid is required for a chemical splash to the eyes from insulation adhesive?", a:"Immediately flush with clean water for a minimum of 15 minutes. Remove contact lenses. Seek medical attention. Consult SDS for specific first aid measures for the product." },
+
+  // ── STANDARDS & CODES ───────────────────────────────────────────────────
+  { cat:"Standards", q:"What is the National Commercial and Industrial Insulation Standards (NCIS) manual?", a:"Published by the Mechanical Insulation Contractors Association (MICA), it is the primary reference standard for commercial/industrial insulation design, materials, and installation in North America." },
+  { cat:"Standards", q:"What organization publishes ASTM standards for insulation materials?", a:"ASTM International (formerly American Society for Testing and Materials). Standards define material properties, testing methods, and specifications (e.g., ASTM C547 for pipe insulation)." },
+  { cat:"Standards", q:"What does ASTM C547 specify?", a:"Mineral fibre preformed pipe insulation — defines material composition, density, thermal conductivity, and physical properties for glass and mineral wool pipe sections." },
+  { cat:"Standards", q:"What does ASTM C533 specify?", a:"Calcium silicate block and pipe insulation — physical and thermal properties, dimensions, and requirements for high-temperature calcium silicate products." },
+  { cat:"Standards", q:"What is ASHRAE 90.1 and how does it relate to insulation?", a:"An ANSI/ASHRAE standard for energy efficiency in commercial buildings. Prescribes minimum insulation thicknesses for HVAC piping and equipment to meet energy codes." },
+  { cat:"Standards", q:"What is the purpose of the OESC (Ontario Electrical Safety Code) for insulators?", a:"Establishes minimum clearances and separation requirements for insulation near electrical equipment and conduits, preventing contact with live conductors." },
+  { cat:"Standards", q:"What is 'Red Seal' (Interprovincial) certification for insulators?", a:"A national standard certifying that a tradesperson has met the competency requirements for the Heat and Frost Insulator trade across Canada, allowing them to work in any province without re-examination." },
+  { cat:"Standards", q:"What Canadian standard governs thermal insulation for buildings?", a:"CAN/ULC-S702 (Mineral Fibre Thermal Insulation for Buildings) and related ULC standards, alongside the National Building Code of Canada (NBC) energy requirements." },
+  { cat:"Standards", q:"What is SMACNA and what standards do they produce relevant to insulators?", a:"Sheet Metal and Air Conditioning Contractors' National Association. Produces standards for ductwork and HVAC insulation installation, sealing, and fabrication." },
+  { cat:"Standards", q:"What is the role of the 'authority having jurisdiction' (AHJ) in insulation work?", a:"The AHJ (typically the local building inspector or fire marshal) enforces code compliance and must approve deviations from listed systems or non-standard installations." },
+  { cat:"Standards", q:"What is CGSB (Canadian General Standards Board)?", a:"Federal agency that develops Canadian national standards, including standards for insulation materials and testing used in government and specifications." },
+  { cat:"Standards", q:"What does the term 'listed' mean when referring to a firestop or insulation product?", a:"The product has been tested by an accredited testing laboratory (e.g., ULC, UL) and meets the requirements of a specific standard. It is documented in the lab's published directory." },
+  { cat:"Standards", q:"What is the IP (Insulation Practitioner) Red Seal exam format?", a:"Multiple-choice exam of 150–200 questions covering all trade competencies. Requires passing a provincial trade exam or equivalent, then the IP exam to receive Red Seal endorsement." },
+  { cat:"Standards", q:"What percentage of the IP Red Seal exam focuses on trade science/knowledge?", a:"Approximately 10% on trade science, with the majority on installation practices, materials, and safety as defined by the National Occupational Analysis (NOA) for Heat and Frost Insulators." },
+  { cat:"Standards", q:"What is the significance of the NOA (National Occupational Analysis) for insulators?", a:"The NOA defines all tasks, sub-tasks, and knowledge requirements for the Heat and Frost Insulator trade. It is the blueprint for apprenticeship training and the Red Seal examination." },
+  { cat:"Standards", q:"What is MICA and what role does it play in the insulation industry?", a:"Mechanical Insulation Contractors Association. Represents commercial/industrial insulation contractors, develops training materials, and publishes the NCIS standards manual." },
+  { cat:"Standards", q:"What does 'pipe schedule' refer to?", a:"A designator for pipe wall thickness. Same NPS pipe in different schedules (Sch. 40, 80, 160) has the same OD but different wall thicknesses, affecting the ID. Insulators must use the OD for sizing." },
+  { cat:"Standards", q:"What standard governs the installation of thermal insulation on building mechanical systems in Canada?", a:"The National Building Code (NBC) references CAN/ULC standards and ASHRAE 90.1 (adopted by reference) for minimum insulation requirements. Provincial building codes add jurisdiction-specific requirements." },
+  { cat:"Standards", q:"What is a 'design specification' in a construction project and why must insulators follow it?", a:"A written document specifying materials, thicknesses, jacketing, and installation requirements for a specific project. Installers must follow it exactly; deviations require engineer approval and may affect warranties." },
+  { cat:"Standards", q:"What does the term 'economic thickness' of insulation mean?", a:"The insulation thickness at which the cost of additional insulation equals the annual energy savings from that extra insulation — the point of maximum return on investment." },
+
+  // ── TOOLS & EQUIPMENT ───────────────────────────────────────────────────
+  { cat:"Tools", q:"What is a 'pipe insulation cutter' (circular cutter) used for?", a:"A specialized tool that scores and cuts pre-formed pipe insulation sections cleanly and squarely, ensuring tight butt joints and minimizing material waste." },
+  { cat:"Tools", q:"What is a 'slitter' or 'insulation slitter' used for?", a:"Cuts longitudinal slits in insulation sections for fitting around elbows (mitered cuts) or for creating custom shapes from standard pipe sections." },
+  { cat:"Tools", q:"What hand tool is used to score and snap metal jacketing (aluminium sheet)?", a:"A sheet metal scorer (scratch awl or scoring knife) to score the metal, then it is bent back and forth to snap along the score line, or a snips/shear for straight cuts." },
+  { cat:"Tools", q:"What is the purpose of a 'band sealer' (banding tool)?", a:"Tensions and crimps/seals stainless steel or aluminium banding straps around jacketing to secure joints and provide weather-tight closures on pipe and equipment insulation." },
+  { cat:"Tools", q:"What is a 'mastic brush' used for in insulation work?", a:"To apply vapour-retarder mastics (adhesive-like coatings) to insulation surfaces, joints, and terminations to create a continuous vapour seal on below-ambient systems." },
+  { cat:"Tools", q:"What type of knife is most commonly used to cut fiberglass pipe insulation sections?", a:"A sharp utility knife or insulation knife with a serrated blade, used with a straight edge guide to ensure clean, square cuts." },
+  { cat:"Tools", q:"What is a 'tin snips' (aviation snips) and what colours indicate its cut direction?", a:"Sheet metal cutting shears. Yellow/straight = straight cuts. Red = left curves. Green = right curves." },
+  { cat:"Tools", q:"What is the purpose of a 'pop rivet' in jacketing installation?", a:"To fasten sheet metal jacketing at overlaps and seams where screws are not practical. Provides a permanent, weather-tight fastening method." },
+  { cat:"Tools", q:"What is a 'level' used for in insulation work?", a:"To ensure horizontal pipe supports and insulation sections are level, preventing standing water in low spots (especially on cold systems), and ensuring aesthetically straight jacketing runs." },
+  { cat:"Tools", q:"What does a 'thickness gauge' measure in insulation inspection?", a:"The actual installed thickness of insulation to verify compliance with design specifications. Essential for quality control and accepting completed work." },
+  { cat:"Tools", q:"What is a 'chalk line' used for in insulation layout?", a:"To snap a straight reference line on large surfaces (tank heads, equipment) for aligning jacketing seams, insulation sections, or firestop application boundaries." },
+  { cat:"Tools", q:"What is the purpose of a 'test hammer' (sounding hammer) on jacketed insulation?", a:"Light tapping on metal jacketing reveals hollow spots (voids in insulation) or delamination by the change in sound — dense areas sound solid, voids produce a hollow ring." },
+  { cat:"Tools", q:"Why must pneumatic tools used for sheet metal work be matched to the correct air pressure?", a:"Too high a pressure can damage sheet metal or blow out fasteners; too low means insufficient driving power. Always verify operating PSI matches tool specifications." },
+  { cat:"Tools", q:"What is a 'scribing compass' used for in layout?", a:"To transfer curves and irregular shapes from pipes or equipment onto flat pattern materials, ensuring accurate fitting of jacketing around non-standard shapes." },
+  { cat:"Tools", q:"What PPE is required when operating a grinder or cutting wheel on jacketing?", a:"Safety glasses or face shield, hearing protection (if prolonged use), leather gloves, and steel-toed boots. Grinders generate sparks and flying debris." },
+  { cat:"Tools", q:"What is a 'snip gauge' or 'bend gauge' used for when fabricating sheet metal jacketing?", a:"A template or reference gauge that ensures consistent bend angles and fold dimensions when forming sheet metal flanges, laps, and edges on jacketing pieces." },
+  { cat:"Tools", q:"What is the purpose of a 'seaming tool' or 'hand seamer' in jacketing work?", a:"Used to fold and crimp the edges of sheet metal to create standing seams, hem folds, or locked seams on jacketing — improves strength and weather resistance at joints." },
+  { cat:"Tools", q:"What is a 'pipe wrap' or 'self-adhesive tape' used for in cold-system insulation?", a:"Foil-faced or vapour-retarder tape applied over joints, seams, and terminations to create a continuous vapour seal. Must be compatible with the insulation facing material." },
+  { cat:"Tools", q:"When would an insulator use a 'nibbler' instead of tin snips?", a:"A nibbler is used for cutting irregular curves or complex shapes in thin sheet metal without deforming the surrounding material — particularly useful for pipe opening cut-outs in flat panel jacketing." },
+  { cat:"Tools", q:"What is the purpose of a 'caulking gun' in insulation and firestopping work?", a:"Dispenses sealants, mastics, and firestop caulks in a controlled bead. Essential for sealing vapour retarder terminations, firestop penetrations, and jacketing weather seals." },
+
+  // ── MATH & GEOMETRY ─────────────────────────────────────────────────────
+  { cat:"Math", q:"What is the formula for the area of a circle?", a:"Area = π × r² (radius squared) or π × D² / 4. Used to calculate the cross-sectional area of pipes and vessel heads." },
+  { cat:"Math", q:"Convert 3\" insulation thickness on a 6\" NPS pipe (OD = 6.625\") to insulated outside diameter in mm.", a:"Insulated OD = 6.625 + (2 × 3) = 12.625 inches. In mm: 12.625 × 25.4 = 320.7 mm." },
+  { cat:"Math", q:"A pipe has OD = 4.5\". What is its circumference?", a:"C = π × D = 3.1416 × 4.5 = 14.14 inches (approximately 359 mm)." },
+  { cat:"Math", q:"What is the Pythagorean theorem and how is it used in insulator layout?", a:"a² + b² = c². Used to find the diagonal (hypotenuse) of rectangular sections for material cuts, and in calculating saddle cuts on intersecting cylinders." },
+  { cat:"Math", q:"A cylindrical tank is 2.4 m diameter and 3.6 m long. What is the lateral surface area for jacketing?", a:"Lateral area = π × D × L = 3.1416 × 2.4 × 3.6 = 27.14 m². (Plus two circular end caps if required.)" },
+  { cat:"Math", q:"Express the formula for volume of a cylinder.", a:"Volume = π × r² × h (or π × D²/4 × h). Used when estimating foam-in-place or loose-fill insulation quantities." },
+  { cat:"Math", q:"What is the formula to calculate the number of linear feet of pipe insulation sections needed for a run?", a:"Number of sections = Total pipe length ÷ Section length. Sections are typically 3 ft (914 mm) long; round up to the next whole section." },
+  { cat:"Math", q:"A hot pipe expands at 12 mm per metre for every 100°C temperature rise. A 20 m pipe operates at 250°C (ambient 20°C). How much does it expand?", a:"ΔT = 250 - 20 = 230°C. Expansion = 20 m × (12 mm/m / 100°C) × 230°C = 20 × 0.12 × 2.3 = 5.52 mm ≈ 55.2 mm total expansion." },
+  { cat:"Math", q:"What is π used as a simplified approximation in quick field calculations?", a:"22/7 ≈ 3.142 or simply 3.14. Using π ≈ 3.1416 gives sufficient accuracy for field layout." },
+  { cat:"Math", q:"What is the formula for the surface area of a sphere (used for spherical tank heads)?", a:"Surface area = 4 × π × r² = π × D². Used to estimate insulation and jacketing quantities for spherical vessels." },
+  { cat:"Math", q:"How many square feet are in one square metre?", a:"1 m² = 10.764 ft². Conversely, 1 ft² = 0.0929 m²." },
+  { cat:"Math", q:"A rectangular duct is 600 mm × 400 mm. What is the perimeter (used to calculate jacketing width)?", a:"Perimeter = 2 × (600 + 400) = 2 × 1000 = 2000 mm = 2.0 m. Insulated perimeter adds 2× insulation thickness on each side." },
+  { cat:"Math", q:"What is the formula for calculating the weight of cylindrical insulation per metre of pipe run?", a:"Weight = density × volume = density × π/4 × (OD² - ID²) × length. Used for structural loading calculations." },
+  { cat:"Math", q:"What is a 'tangent' and when does an insulator use trig?", a:"Tangent = opposite/adjacent in a right triangle. Insulators use trigonometry (sin, cos, tan) to calculate miter angles for elbows and saddle intersection cuts." },
+  { cat:"Math", q:"How do you convert degrees Celsius to Fahrenheit?", a:"°F = (°C × 9/5) + 32. Example: 200°C = (200 × 1.8) + 32 = 360 + 32 = 392°F." },
+  { cat:"Math", q:"A 90° elbow has a centreline radius of 9\". What is the total arc length around the centreline?", a:"Arc length = (angle/360) × 2πr = (90/360) × 2 × 3.1416 × 9 = 0.25 × 56.55 = 14.14 inches." },
+  { cat:"Math", q:"What is the formula for converting linear metres of pipe to the number of 3-foot (914 mm) sections needed?", a:"Sections = (total length in mm) ÷ 914 mm, rounded up. Example: 12,000 mm ÷ 914 = 13.13 → 14 sections." },
+  { cat:"Math", q:"How do you calculate the area of a trapezoid (used in gore pattern layout)?", a:"Area = ½ × (sum of parallel sides) × height = ½ × (a + b) × h. Used to estimate jacketing material for gore segments." },
+  { cat:"Math", q:"What is the formula for the lateral surface area of a cone (reducer/increaser jacketing)?", a:"Lateral area = π × r × slant height (l), where slant height l = √(h² + r²). Used to calculate jacketing for conical transition pieces." },
+  { cat:"Math", q:"A pipe OD is 323 mm. How many wraps per metre does a 600 mm wide tape cover at 50% overlap?", a:"Effective width with 50% overlap = 300 mm. Circumference = π × 323 = 1015 mm. Wraps per metre = 1000 ÷ 300 = 3.33 → 4 wraps per metre." },
+
+  // ── SYSTEMS & APPLICATIONS ──────────────────────────────────────────────
+  { cat:"Systems", q:"What is a 'cold system' in pipe insulation and what special challenges does it present?", a:"A system operating below ambient temperature (e.g., chilled water, refrigeration). Challenge: condensation forms if moisture reaches the pipe surface. Requires unbroken vapour retarder system." },
+  { cat:"Systems", q:"What is a 'hot system' and what are the primary objectives of insulating it?", a:"A system operating above ambient (steam, hot water, process heat). Primary objectives: reduce heat loss, maintain process temperature, improve energy efficiency, and provide personnel protection." },
+  { cat:"Systems", q:"What is 'personnel protection' insulation and when is it required?", a:"Insulation applied to prevent burns from contact with hot surfaces. Required when surface temperatures exceed 60°C (140°F) within reach of workers, per CAN/CSA Z32 and OSHA standards." },
+  { cat:"Systems", q:"What is 'heat tracing' and how does insulation interact with it?", a:"An electric or steam-traced cable/tube attached to a pipe to maintain minimum temperature. Insulation is applied over the trace to retain heat. The trace is accounted for in the ID of the insulation system." },
+  { cat:"Systems", q:"What is 'cryogenic insulation' and what materials are typically used?", a:"Insulation for systems below -100°C (e.g., LNG, liquid nitrogen). Materials: cellular glass, perlite-packed systems, polyurethane foam, and multi-layer foil insulation (vacuum-jacketed systems)." },
+  { cat:"Systems", q:"Describe a 'dual-temperature' system and the insulation challenge it presents.", a:"A system that operates both above and below ambient temperature at different times. Challenge: the vapour retarder must be designed to function in both modes; improperly designed systems will develop condensation during cold operation." },
+  { cat:"Systems", q:"What is an 'acoustic insulation' system and where is it used?", a:"Insulation system designed primarily to reduce sound transmission through pipes, ducts, or mechanical equipment enclosures. Dense materials (mineral wool, mass-loaded vinyl) are used in addition to thermal insulation." },
+  { cat:"Systems", q:"What is 'process insulation' as distinct from building insulation?", a:"Process insulation is applied to industrial equipment (reactors, distillation columns, heat exchangers) to control process temperature, improve yield, and ensure worker safety in industrial plants." },
+  { cat:"Systems", q:"What is a 'boiler' and what insulation does it typically require?", a:"A pressure vessel that generates steam. Requires high-temperature insulation (calcium silicate, ceramic fibre blanket) on the shell and flue gas ducts, plus metal jacketing for weather protection." },
+  { cat:"Systems", q:"What is 'condensate return' piping and what insulation issues arise?", a:"Piping that returns hot condensed steam back to the boiler. Insulated as a hot system. Issues: frequent valve and fitting maintenance requires removable insulation covers on condensate traps." },
+  { cat:"Systems", q:"What is an air-handling unit (AHU) and what insulation does ductwork require?", a:"An AHU conditions and distributes air in HVAC systems. Supply ductwork requires thermal + vapour-retarder insulation; the insulation R-value is specified by ASHRAE 90.1 based on climate zone." },
+  { cat:"Systems", q:"What is the purpose of insulating a chilled water pipe that runs through a warm mechanical room?", a:"Prevent heat gain (maintain chilled water temperature), prevent condensation on the pipe surface (which causes drips and corrosion), and reduce energy consumption of the chiller." },
+  { cat:"Systems", q:"What is a 'pressure vessel' and what code governs their design in Canada?", a:"A container designed to hold fluids at pressures above atmospheric. Governed by ASME Boiler and Pressure Vessel Code (ASME BPVC) and provincial pressure vessel acts (e.g., Alberta Pressure Vessel Inspection Act)." },
+  { cat:"Systems", q:"What is 'drip protection' insulation?", a:"Insulation on cold systems in indoor environments that prevents condensation droplets from forming on uninsulated surfaces and dripping onto equipment, floors, or electrical systems." },
+  { cat:"Systems", q:"What is 'weatherproofing' of an outdoor insulation system?", a:"All measures taken to prevent rain, wind-driven moisture, UV radiation, and freeze-thaw cycles from degrading the insulation system — including sealed metal jacketing, caulked seams, and proper drainage design." },
+  { cat:"Systems", q:"What is a 'district energy system' and what insulation challenge does it present?", a:"A centralized plant distributing heating/cooling to multiple buildings via underground piping. Challenge: buried insulation must handle ground moisture and soil loading; pre-insulated pipe with HDPE outer jacket is standard." },
+  { cat:"Systems", q:"What is 'tank insulation' and what additional considerations apply vs. pipe insulation?", a:"Insulating storage tanks (horizontal or vertical cylinders, spheres). Additional considerations: access for level gauges and manholes, supporting insulation weight on vertical surfaces, weather-tight jacketing, and roof drainage." },
+  { cat:"Systems", q:"What is 'refractory lining' vs. 'insulation' in a furnace or boiler?", a:"Refractory lining (castables, firebrick) withstands direct flame and extremely high temperatures. Insulation (ceramic fibre, calcium silicate) goes behind the refractory to reduce shell temperature and heat loss." },
+  { cat:"Systems", q:"What is a 'heat exchanger' and what insulation is typically required?", a:"A device that transfers heat between two fluids. Insulated with pre-formed or blanket insulation on the shell; head covers are made removable for maintenance access. Material chosen for the operating temperature." },
+  { cat:"Systems", q:"What is 'freeze protection' insulation design and what is the critical difference from simple thermal insulation?", a:"Insulation designed to prevent a pipe from freezing during a power outage or cold snap. Critical difference: freeze protection insulation thickness is calculated to maintain pipe temperature above 0°C for a specified hours-without-heat scenario, not just steady-state heat loss." },
+
+  // ── TRADE KNOWLEDGE ─────────────────────────────────────────────────────
+  { cat:"Trade Knowledge", q:"What is the apprenticeship ratio for Heat and Frost Insulators in most provinces?", a:"Typically 1 journeyperson to 1–3 apprentices, depending on province. Varies by provincial collective agreement and labour legislation." },
+  { cat:"Trade Knowledge", q:"How many hours of on-the-job training does the IP (Heat and Frost Insulator) apprenticeship typically require?", a:"Approximately 7,200 hours (4 years × 1,800 hours) plus in-school technical training periods, varying by province." },
+  { cat:"Trade Knowledge", q:"What is the local union affiliation for Heat and Frost Insulators in Canada?", a:"International Association of Heat and Frost Insulators and Allied Workers (HFIAW), part of the AFL-CIO and CLC (Canadian Labour Congress)." },
+  { cat:"Trade Knowledge", q:"What is 'pre-fabrication' in insulation work and why is it advantageous?", a:"Manufacturing insulation assemblies in a shop environment before bringing them to the jobsite. Advantages: quality control, weather protection, labour efficiency, reduced site congestion." },
+  { cat:"Trade Knowledge", q:"What is a 'material takeoff' (MTO) and who typically prepares it?", a:"A detailed list of all insulation materials, jacketing, fasteners, adhesives, and accessories required for a project, with quantities. Prepared by the estimator or senior insulator from project drawings and specifications." },
+  { cat:"Trade Knowledge", q:"What does 'plumb, level, and square' mean in the context of insulation installation?", a:"Plumb: vertical surfaces are truly vertical. Level: horizontal surfaces are truly horizontal. Square: corners are 90°. Achieving these ensures professional, leak-free, and aesthetically acceptable installations." },
+  { cat:"Trade Knowledge", q:"What is the purpose of a 'mock-up' in large insulation projects?", a:"A full-scale sample section built before main installation to confirm material compatibility, workmanship standards, appearance, and inspector approval before the full project proceeds." },
+  { cat:"Trade Knowledge", q:"What is 'commissioning' in relation to mechanical insulation?", a:"The process of verifying that all insulation systems are installed per specification, achieving design thermal performance, and deficiencies are documented and corrected before project handover." },
+  { cat:"Trade Knowledge", q:"What does 'spec section 23 07 00' (MasterFormat) refer to?", a:"CSI MasterFormat specification section for HVAC insulation (Duct Insulation, Pipe Insulation, Equipment Insulation). Specifies materials, products, and installation requirements for the mechanical systems." },
+  { cat:"Trade Knowledge", q:"What is the role of the 'general contractor' vs. the 'mechanical contractor' on a project?", a:"The general contractor (GC) manages overall project coordination. The mechanical contractor (MC) installs piping, HVAC, and plumbing. Insulators typically subcontract under the MC." },
+  { cat:"Trade Knowledge", q:"What is 'submittals' in the construction process?", a:"Documentation submitted by subcontractors (product data, shop drawings, samples) to the engineer/architect for review and approval before installation begins." },
+  { cat:"Trade Knowledge", q:"What is the purpose of a 'pre-job meeting' on an insulation project?", a:"To review scope, specifications, schedule, coordination with other trades, site safety rules, and confirm material availability before work begins." },
+  { cat:"Trade Knowledge", q:"What does 'installed insulation' mean under a standard trade contract?", a:"The insulator is responsible for furnishing all materials, labour, tools, and equipment to install insulation per specification. Payment is typically by linear foot of pipe or square foot of equipment." },
+  { cat:"Trade Knowledge", q:"What is 'punch list' work at project completion?", a:"A final list of deficiencies and incomplete items identified during the substantial completion inspection. The insulation trade must correct all items before final payment." },
+  { cat:"Trade Knowledge", q:"What is 'COR certification' and how does it relate to an insulation contractor?", a:"Certificate of Recognition — a safety program certification (required for government contracts in many provinces). Demonstrates a contractor's safety management system meets a provincial standard (e.g., SECOR in Alberta)." },
+  { cat:"Trade Knowledge", q:"What is the difference between 'supply and install' and 'labour only' insulation contracts?", a:"Supply and install: contractor furnishes all materials and labour. Labour only: owner/GC supplies materials; contractor provides only labour and tools. Labour-only work requires careful material verification by the installer." },
+  { cat:"Trade Knowledge", q:"What is the purpose of the 'health and safety plan' on a construction project?", a:"A project-specific document identifying hazards, controls, emergency procedures, and responsibilities to protect all workers and comply with occupational health and safety legislation." },
+  { cat:"Trade Knowledge", q:"What does 'as-built drawings' mean for an insulation project?", a:"Drawings updated to reflect the actual installed conditions (pipe routes, insulation types, thicknesses, firestop locations) vs. the original design drawings. Required for operations and maintenance." },
+  { cat:"Trade Knowledge", q:"What is the primary advantage of using pre-insulated pipe for a district heating/cooling system?", a:"Factory-applied insulation ensures consistent thickness and quality; the protective outer jacket (HDPE) provides excellent in-ground moisture protection that field-applied systems struggle to match." },
+  { cat:"Trade Knowledge", q:"What is 'energy auditing' in relation to mechanical insulation?", a:"An assessment of existing insulation systems to identify deficiencies, missing insulation, and opportunities for energy savings. Insulators may be hired to install improvements identified in an energy audit." },
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+let reviewed = new Set(JSON.parse(localStorage.getItem('ip_reviewed') || '[]'));
+let order = QUESTIONS.map((_,i) => i);
+
+function saveReviewed() {
+  localStorage.setItem('ip_reviewed', JSON.stringify([...reviewed]));
+}
+
+// ── Build cards ────────────────────────────────────────────────────────────
+function buildCards() {
+  const grid = document.getElementById('flashGrid');
+  grid.innerHTML = '';
+  const visible = order.filter(i => currentFilter === 'all' || QUESTIONS[i].cat === currentFilter);
+  visible.forEach(i => {
+    const q = QUESTIONS[i];
+    const card = document.createElement('div');
+    card.className = 'flashcard' + (reviewed.has(i) ? ' answered' : '');
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face">
+          <span class="cat-badge">${q.cat}</span>
+          <div class="q-num">Q${i+1}</div>
+          <div class="q-text">${q.q}</div>
+          <div class="flip-hint">tap to reveal ▶</div>
+        </div>
+        <div class="card-face card-back-face">
+          <span class="cat-badge">${q.cat}</span>
+          <div class="q-num">Q${i+1} — Answer</div>
+          <div class="q-text">${q.a}</div>
+          <button class="mark-btn" data-idx="${i}">${reviewed.has(i) ? '✓ Reviewed' : 'Mark Reviewed'}</button>
+          <div class="flip-hint">tap to flip back ◀</div>
+        </div>
+      </div>`;
+    card.addEventListener('click', e => {
+      if (e.target.classList.contains('mark-btn')) return;
+      card.classList.toggle('flipped');
+    });
+    card.querySelector('.mark-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      const idx = parseInt(e.target.dataset.idx);
+      if (reviewed.has(idx)) { reviewed.delete(idx); } else { reviewed.add(idx); }
+      saveReviewed();
+      card.classList.toggle('answered', reviewed.has(idx));
+      e.target.textContent = reviewed.has(idx) ? '✓ Reviewed' : 'Mark Reviewed';
+      updateStats();
+    });
+    grid.appendChild(card);
+  });
+  updateStats(visible.length);
+}
+
+function updateStats(showing) {
+  if (showing === undefined) {
+    showing = order.filter(i => currentFilter === 'all' || QUESTIONS[i].cat === currentFilter).length;
+  }
+  const rev = [...reviewed].filter(i => currentFilter === 'all' || QUESTIONS[i].cat === currentFilter).length;
+  document.getElementById('statShowing').textContent = showing;
+  document.getElementById('statReviewed').textContent = rev;
+  document.getElementById('statRemaining').textContent = showing - rev;
+  document.getElementById('progressText').textContent = `${reviewed.size} / ${QUESTIONS.length}`;
+  document.getElementById('progressFill').style.width = (reviewed.size / QUESTIONS.length * 100) + '%';
+}
+
+// ── Pills ──────────────────────────────────────────────────────────────────
+function buildPills() {
+  const cats = [...new Set(QUESTIONS.map(q => q.cat))];
+  const wrap = document.getElementById('catPills');
+  const all = document.createElement('span');
+  all.className = 'pill active'; all.textContent = 'All (' + QUESTIONS.length + ')'; all.dataset.cat = 'all';
+  wrap.appendChild(all);
+  cats.forEach(cat => {
+    const p = document.createElement('span');
+    p.className = 'pill';
+    p.textContent = cat + ' (' + QUESTIONS.filter(q=>q.cat===cat).length + ')';
+    p.dataset.cat = cat;
+    wrap.appendChild(p);
+  });
+  wrap.addEventListener('click', e => {
+    const pill = e.target.closest('.pill');
+    if (!pill) return;
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    currentFilter = pill.dataset.cat;
+    document.getElementById('catFilter').value = currentFilter;
+    buildCards();
+  });
+}
+
+document.getElementById('catFilter').addEventListener('change', e => {
+  currentFilter = e.target.value;
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.cat === currentFilter));
+  buildCards();
+});
+
+document.getElementById('shuffleBtn').addEventListener('click', () => {
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  buildCards();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all review progress?')) return;
+  reviewed.clear(); saveReviewed();
+  document.querySelectorAll('.flashcard').forEach(c => {
+    c.classList.remove('answered', 'flipped');
+    c.querySelector('.mark-btn').textContent = 'Mark Reviewed';
+  });
+  updateStats();
+});
+
+// Dark/light theme toggle (inherit from parent site)
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  const stored = localStorage.getItem('theme');
+  if (stored) document.documentElement.dataset.theme = stored;
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+    document.documentElement.dataset.theme = isDark ? '' : 'dark';
+    localStorage.setItem('theme', isDark ? '' : 'dark');
+  });
+}
+
+buildPills();
+buildCards();
+  </script>
+</body>
+</html>
